@@ -24,7 +24,6 @@ import { Card } from '@eliancodes/brutal-ui';
 
       <!-- What is Inflation -->
       <Card>
-        <div style='border-left: 4px solid #3182ce; padding-left: 20px; background: #ebf8ff; padding: 20px; margin: -20px; margin-bottom: 0;'>
           <h2 class='text-3xl md:text-5xl mb-4'>What is Inflation?</h2>
           <p class='text-lg md:text-xl mb-4'>
             Inflation is the <strong>rate</strong> at which prices increase over time. Think of it like the speedometer in your car—it tells you how fast you're going, not how far you've traveled. Similarly, inflation tells you how quickly prices are rising, not how expensive things are overall.
@@ -35,12 +34,11 @@ import { Card } from '@eliancodes/brutal-ui';
           <p class='text-lg md:text-xl'>
             We show both <strong>monthly</strong> inflation (how prices changed from last month) and <strong>annual</strong> inflation (how prices changed over the past year). Monthly rates are typically smaller but more volatile; annual rates give a better sense of the overall trend.
           </p>
-        </div>
       </Card>
 
 
       <!-- Visualization -->
-      <Card>
+      <Card class="bg-[#ebf8ff]">
         <h2 class='text-3xl md:text-5xl mb-6'>Price Changes by Category</h2>
         <div id="reportDate" class='text-lg'></div>
         <div id="inflationChart" style='width: 100%; overflow-x: auto;'></div>
@@ -51,7 +49,7 @@ import { Card } from '@eliancodes/brutal-ui';
         <h2 class='text-3xl md:text-5xl mb-4'>Calculate Your Personal Impact</h2>
         <div style='background: #f0fff4; border-left: 4px solid #48bb78; padding: 15px; margin-bottom: 20px;'>
           <p class='text-base'>
-            <strong>🔒 Privacy Notice:</strong> We won't store or sell the expenditure data you enter. Everything is cleared after you press the "Calculate My Inflation Impact" button.
+            <strong>🔒 Privacy Notice:</strong> We won't store or sell the spending data you enter for calculating the impact of inflation on you.
           </p>
         </div>
         <p class='text-lg mb-6' id="calculatorDesc"></p>
@@ -71,7 +69,6 @@ import { Card } from '@eliancodes/brutal-ui';
 
       <!-- Email Signup -->
       <Card>
-        <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; margin: -30px; border-radius: 8px;'>
           <h2 class='text-3xl md:text-5xl mb-4'>📧 Stay Informed</h2>
           <p class='text-lg mb-6'>
             Get notified when each new Price Inflation Report is released monthly.
@@ -90,13 +87,11 @@ import { Card } from '@eliancodes/brutal-ui';
               Sign Up
             </button>
           </div>
-        </div>
       </Card>
 
       <!-- Share Data -->
       <Card>
-        <div style='border: 2px solid #ed8936; padding: 20px; margin: -30px; border-radius: 8px;'>
-          <h2 class='text-3xl md:text-5xl mb-4'>👥 Help Build America's Spending Report</h2>
+          <h2 class='text-3xl md:text-5xl mb-4'>Help Build America's Spending Report</h2>
           <p class='text-lg mb-6'>
             If you're willing to share your spending data, we'll use it to create a monthly report showing average spending across the United States. The aggregated results will be available to all Americans the following month, helping everyone understand real spending patterns in our economy.
           </p>
@@ -137,7 +132,6 @@ import { Card } from '@eliancodes/brutal-ui';
           >
             Share My Data for America's Spending Report
           </button>
-        </div>
       </Card>
 
       <!-- Footer -->
@@ -151,9 +145,9 @@ import { Card } from '@eliancodes/brutal-ui';
   </main>
 </Layout>
 
-<script is:inline src="https://cdn.jsdelivr.net/npm/vega@5.25.0"></script>
-<script is:inline src="https://cdn.jsdelivr.net/npm/vega-lite@5.16.3"></script>
-<script is:inline src="https://cdn.jsdelivr.net/npm/vega-embed@6.24.0"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/vega@6"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/vega-lite@6"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>
 
 <script is:inline>
   // CPI Categories with BLS Series IDs
@@ -272,7 +266,7 @@ import { Card } from '@eliancodes/brutal-ui';
   function renderPage() {
     // Update report date
     document.getElementById('reportDate').innerHTML = 
-      `📅 Latest Report: ${cpiData.reportMonth} (Released ${cpiData.reportDate})`;
+      `Latest Report: ${cpiData.reportMonth} (Released ${cpiData.reportDate})`;
     
     document.getElementById('calculatorDesc').innerHTML = 
       `Enter your monthly spending for ${cpiData.reportMonth} in any categories below to see what those expenses would have cost in ${cpiData.previousMonth} and ${cpiData.previousYear}.`;
@@ -294,18 +288,18 @@ import { Card } from '@eliancodes/brutal-ui';
     Object.keys(categories).forEach(category => {
       // Personal calculator form
       const div1 = document.createElement('div');
-      div1.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+      div1.style.cssText = 'display: flex; flex-direction: column; gap: 5px;';
       div1.innerHTML = `
-        <label style='flex: 0 0 250px; font-weight: 500;'>${category}:</label>
-        <div style='position: relative; flex: 1;'>
-          <span style='position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #718096;'>$</span>
+        <label style='font-weight: 500; font-size: 0.95rem;'>${category}</label>
+        <div style='position: relative; max-width: 300px;'>
+          <span style='position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #718096; font-size: 1.1rem;'>$</span>
           <input 
             type="number" 
             id="exp_${category.replace(/\s+/g, '_')}" 
             min="0" 
             step="0.01" 
             placeholder="0.00"
-            style='width: 100%; padding: 10px 10px 10px 25px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1rem;'
+            style='width: 100%; padding: 12px 12px 12px 28px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1.1rem;'
           />
         </div>
       `;
@@ -313,18 +307,18 @@ import { Card } from '@eliancodes/brutal-ui';
       
       // Share data form
       const div2 = document.createElement('div');
-      div2.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+      div2.style.cssText = 'display: flex; flex-direction: column; gap: 5px;';
       div2.innerHTML = `
-        <label style='flex: 0 0 250px; font-weight: 500;'>${category}:</label>
-        <div style='position: relative; flex: 1;'>
-          <span style='position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #718096;'>$</span>
+        <label style='font-weight: 500; font-size: 0.95rem;'>${category}</label>
+        <div style='position: relative; max-width: 300px;'>
+          <span style='position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #718096; font-size: 1.1rem;'>$</span>
           <input 
             type="number" 
             id="share_${category.replace(/\s+/g, '_')}" 
             min="0" 
             step="0.01" 
             placeholder="0.00"
-            style='width: 100%; padding: 10px 10px 10px 25px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1rem;'
+            style='width: 100%; padding: 12px 12px 12px 28px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1.1rem;'
           />
         </div>
       `;
@@ -349,11 +343,16 @@ import { Card } from '@eliancodes/brutal-ui';
       });
     });
 
+// Determine width based on screen size
+    const isMobile = window.innerWidth < 768;
+    const chartWidth = isMobile ? 600 : 900;
+    const chartHeight = isMobile ? 700 : 650;
+
     const vegaSpec = {
-      "$schema": "https://vega.github.io/schema/vega/v5.json",
+      "$schema": "https://vega.github.io/schema/vega/v6.json",
       "autosize": {"type": "fit", "contains": "padding"},
-      "width": 800,
-      "height": 600,
+      "width": chartWidth,
+      "height": chartHeight,
       "padding": 5,
       "data": [
         {
@@ -367,7 +366,7 @@ import { Card } from '@eliancodes/brutal-ui';
           "type": "band",
           "domain": {"data": "table", "field": "category"},
           "range": "height",
-          "padding": 0.3
+          "padding": 0.15
         },
         {
           "name": "xscale",
@@ -389,13 +388,13 @@ import { Card } from '@eliancodes/brutal-ui';
           "orient": "bottom",
           "scale": "xscale",
           "title": "% Change",
-          "titleFontSize": 16,
-          "labelFontSize": 14
+          "titleFontSize": isMobile ? 14 : 16,
+          "labelFontSize": isMobile ? 12 : 14
         },
         {
           "orient": "left",
           "scale": "yscale",
-          "labelFontSize": 14
+          "labelFontSize": isMobile ? 11 : 14
         }
       ],
       "legends": [
@@ -403,8 +402,8 @@ import { Card } from '@eliancodes/brutal-ui';
           "fill": "color",
           "title": "Period",
           "orient": "top-right",
-          "titleFontSize": 16,
-          "labelFontSize": 14
+          "titleFontSize": isMobile ? 14 : 16,
+          "labelFontSize": isMobile ? 12 : 14
         }
       ],
       "marks": [
@@ -431,7 +430,7 @@ import { Card } from '@eliancodes/brutal-ui';
               "type": "band",
               "range": "height",
               "domain": {"data": "facet", "field": "type"},
-              "padding": 0.3
+              "padding": 0.15
             }
           ],
           "marks": [
@@ -464,7 +463,7 @@ import { Card } from '@eliancodes/brutal-ui';
                   "fill": {"value": "#000"},
                   "baseline": {"value": "middle"},
                   "text": {"signal": "format(datum.value, '.1f') + '%'"},
-                  "fontSize": {"value": 14},
+                  "fontSize": {"value": isMobile ? 12 : 14},
                   "fontWeight": {"value": "bold"}
                 }
               }
