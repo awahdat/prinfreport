@@ -177,11 +177,21 @@ import { Card } from '@eliancodes/brutal-ui';
 
   let cpiData = null;
 
-  // Initialize
-  document.addEventListener('DOMContentLoaded', function() {
+  // Initialize function
+  function initializePage() {
     populateStates();
     fetchCPIData();
-  });
+  }
+
+  // Run on initial load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePage);
+  } else {
+    initializePage();
+  }
+
+  // Re-run when navigating back to this page (for SPA routing)
+  document.addEventListener('astro:page-load', initializePage);
 
   function populateStates() {
     const stateSelect = document.getElementById('state');
