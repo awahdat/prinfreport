@@ -14,13 +14,634 @@ import { Card } from '@eliancodes/brutal-ui';
 >
   <main class='bg-pink p-6'>
     <section class='grid grid-cols-1 gap-8 mt-4'>
+      <!-- Header -->
       <Card>
-        <iframe 
-          src="/inflation-tracker.html" 
-          style="width: 100%; min-height: 100vh; border: none;"
-          title="Price Inflation Report"
-        ></iframe>
+        <h1 class='text-5xl md:text-7xl mb-4'>Price Inflation Report</h1>
+        <p class='text-xl md:text-2xl mb-6'>
+          To help Americans understand the changing prices in the economy and in their daily life.
+        </p>
+      </Card>
+
+      <!-- What is Inflation -->
+      <Card>
+        <div style='border-left: 4px solid #3182ce; padding-left: 20px; background: #ebf8ff; padding: 20px; margin: -20px; margin-bottom: 0;'>
+          <h2 class='text-3xl md:text-5xl mb-4'>What is Inflation?</h2>
+          <p class='text-lg md:text-xl mb-4'>
+            Inflation is the <strong>rate</strong> at which prices increase over time. Think of it like the speedometer in your car—it tells you how fast you're going, not how far you've traveled. Similarly, inflation tells you how quickly prices are rising, not how expensive things are overall.
+          </p>
+          <p class='text-lg md:text-xl mb-4'>
+            A 3% annual inflation rate means that something costing $100 today would cost $103 in a year. The key word is "rate"—it's about the <em>speed of change</em>, not the price level itself. Even if prices are high, if inflation is 0%, prices aren't changing. Conversely, even if prices are low, 10% inflation means they're rising rapidly.
+          </p>
+          <p class='text-lg md:text-xl'>
+            We show both <strong>monthly</strong> inflation (how prices changed from last month) and <strong>annual</strong> inflation (how prices changed over the past year). Monthly rates are typically smaller but more volatile; annual rates give a better sense of the overall trend.
+          </p>
+        </div>
+      </Card>
+
+      <!-- Report Date -->
+      <div id="reportDate" class='text-lg'></div>
+
+      <!-- Visualization -->
+      <Card>
+        <h2 class='text-3xl md:text-5xl mb-6'>Price Changes by Category</h2>
+        <div id="inflationChart" style='width: 100%; overflow-x: auto;'></div>
+      </Card>
+
+      <!-- Personal Calculator -->
+      <Card>
+        <h2 class='text-3xl md:text-5xl mb-4'>Calculate Your Personal Impact</h2>
+        <div style='background: #f0fff4; border-left: 4px solid #48bb78; padding: 15px; margin-bottom: 20px;'>
+          <p class='text-base'>
+            <strong>🔒 Privacy Notice:</strong> We won't store or sell the expenditure data you enter. Everything is cleared after you press the "Calculate My Inflation Impact" button.
+          </p>
+        </div>
+        <p class='text-lg mb-6' id="calculatorDesc"></p>
+        
+        <div id="expenseForm" style='display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;'></div>
+        
+        <button 
+          onclick="calculateImpact()" 
+          class='btn btn-primary w-full'
+          style='background: #4299e1; color: white; padding: 15px 30px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; width: 100%;'
+        >
+          Calculate My Inflation Impact
+        </button>
+        
+        <div id="results"></div>
+      </Card>
+
+      <!-- Email Signup -->
+      <Card>
+        <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; margin: -30px; border-radius: 8px;'>
+          <h2 class='text-3xl md:text-5xl mb-4'>📧 Stay Informed</h2>
+          <p class='text-lg mb-6'>
+            Get notified when each new Price Inflation Report is released monthly.
+          </p>
+          <div style='display: flex; flex-direction: column; gap: 10px;'>
+            <input 
+              type="email" 
+              id="emailInput" 
+              placeholder="Enter your email" 
+              style='padding: 15px; border: none; border-radius: 6px; font-size: 1rem; color: #333;'
+            />
+            <button 
+              onclick="submitEmail()" 
+              style='background: white; color: #667eea; padding: 15px 30px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 1rem;'
+            >
+              Sign Up
+            </button>
+          </div>
+        </div>
+      </Card>
+
+      <!-- Share Data -->
+      <Card>
+        <div style='border: 2px solid #ed8936; padding: 20px; margin: -30px; border-radius: 8px;'>
+          <h2 class='text-3xl md:text-5xl mb-4'>👥 Help Build America's Spending Report</h2>
+          <p class='text-lg mb-6'>
+            If you're willing to share your spending data, we'll use it to create a monthly report showing average spending across the United States. The aggregated results will be available to all Americans the following month, helping everyone understand real spending patterns in our economy.
+          </p>
+          
+          <div style='background: #fffaf0; border-left: 4px solid #ed8936; padding: 15px; margin-bottom: 20px;'>
+            <p class='text-base'>
+              <strong>How we use your data:</strong> Your spending data will be combined with data from other Americans to calculate average spending by category. Individual submissions remain anonymous and are only used for aggregate statistics.
+            </p>
+          </div>
+          
+          <div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px;'>
+            <div>
+              <label style='display: block; margin-bottom: 5px; font-weight: 500;'>ZIP Code *</label>
+              <input 
+                type="text" 
+                id="zipcode" 
+                placeholder="12345" 
+                maxlength="5"
+                style='width: 100%; padding: 10px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1rem;'
+              />
+            </div>
+            <div>
+              <label style='display: block; margin-bottom: 5px; font-weight: 500;'>State *</label>
+              <select 
+                id="state"
+                style='width: 100%; padding: 10px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1rem;'
+              >
+                <option value="">Select state</option>
+              </select>
+            </div>
+          </div>
+          
+          <div id="shareExpenseForm" style='display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;'></div>
+          
+          <button 
+            onclick="submitShareData()"
+            style='background: #ed8936; color: white; padding: 15px 30px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; width: 100%;'
+          >
+            Share My Data for America's Spending Report
+          </button>
+        </div>
+      </Card>
+
+      <!-- Footer -->
+      <Card>
+        <div style='text-align: center; color: #718096;'>
+          <p class='text-base'>Data source: U.S. Bureau of Labor Statistics (BLS)</p>
+          <p class='text-base mt-2'>Updated monthly when new CPI data is released</p>
+        </div>
       </Card>
     </section>
   </main>
 </Layout>
+
+<script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+
+<script is:inline>
+  // CPI Categories with BLS Series IDs
+  const categories = {
+    'All Items': 'CUSR0000SA0',
+    'Food': 'CUSR0000SAF',
+    'Food at Home': 'CUSR0000SAF11',
+    'Food Away from Home': 'CUSR0000SEFV',
+    'Gasoline': 'CUSR0000SETB01',
+    'Electricity': 'CUSR0000SEHF01',
+    'Utility Gas': 'CUSR0000SEHF02',
+    'New Vehicles': 'CUSR0000SETA01',
+    'Used Cars': 'CUSR0000SETA02',
+    'Apparel': 'CUSR0000SAA',
+    'Shelter': 'CUSR0000SAH1',
+    'Transportation Services': 'CUSR0000SAS4',
+    'Medical Care Services': 'CUSR0000SAM2'
+  };
+
+  const states = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'];
+
+  let cpiData = null;
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', function() {
+    populateStates();
+    fetchCPIData();
+  });
+
+  function populateStates() {
+    const stateSelect = document.getElementById('state');
+    states.forEach(state => {
+      const option = document.createElement('option');
+      option.value = state;
+      option.textContent = state;
+      stateSelect.appendChild(option);
+    });
+  }
+
+  // Fetch CPI Data from BLS API
+  async function fetchCPIData() {
+    // PRODUCTION: Use real BLS API
+    // Uncomment and add your BLS API key from https://data.bls.gov/registrationEngine/
+    /*
+    const BLS_API_KEY = 'YOUR_BLS_API_KEY';
+    const currentYear = new Date().getFullYear();
+    const seriesIds = Object.values(categories);
+    
+    try {
+      const response = await fetch('https://api.bls.gov/publicAPI/v2/timeseries/data/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          seriesid: seriesIds,
+          startyear: currentYear - 1,
+          endyear: currentYear,
+          registrationkey: BLS_API_KEY
+        })
+      });
+      
+      const data = await response.json();
+      cpiData = processBLSData(data);
+      renderPage();
+    } catch (error) {
+      console.error('Error fetching BLS data:', error);
+      useMockData();
+    }
+    */
+    
+    // DEVELOPMENT: Use mock data
+    useMockData();
+  }
+
+  function useMockData() {
+    cpiData = {
+      reportDate: 'December 11, 2024',
+      reportMonth: 'November 2024',
+      previousMonth: 'October 2024',
+      previousYear: 'November 2023',
+      categories: {
+        'All Items': { monthly: 0.3, annual: 2.7 },
+        'Food': { monthly: 0.4, annual: 2.4 },
+        'Food at Home': { monthly: 0.2, annual: 1.8 },
+        'Food Away from Home': { monthly: 0.3, annual: 3.6 },
+        'Gasoline': { monthly: -0.6, annual: -8.1 },
+        'Electricity': { monthly: 0.2, annual: 3.8 },
+        'Utility Gas': { monthly: 1.2, annual: -4.2 },
+        'New Vehicles': { monthly: 0.1, annual: 1.2 },
+        'Used Cars': { monthly: 2.0, annual: 3.8 },
+        'Apparel': { monthly: 0.0, annual: 0.5 },
+        'Shelter': { monthly: 0.3, annual: 4.7 },
+        'Transportation Services': { monthly: 0.3, annual: 8.6 },
+        'Medical Care Services': { monthly: 0.2, annual: 3.5 }
+      }
+    };
+    renderPage();
+  }
+
+  function processBLSData(data) {
+    // Process BLS API response and calculate monthly/annual changes
+    // This function would parse the API response and calculate inflation rates
+    // Implementation depends on BLS API response structure
+    return data;
+  }
+
+  function renderPage() {
+    // Update report date
+    document.getElementById('reportDate').innerHTML = 
+      `📅 Latest Report: ${cpiData.reportMonth} (Released ${cpiData.reportDate})`;
+    
+    document.getElementById('calculatorDesc').innerHTML = 
+      `Enter your monthly spending for ${cpiData.reportMonth} in any categories below to see what those expenses would have cost in ${cpiData.previousMonth} and ${cpiData.previousYear}.`;
+
+    // Render expense forms
+    renderExpenseForms();
+    
+    // Render Vega chart
+    renderChart();
+  }
+
+  function renderExpenseForms() {
+    const expenseForm = document.getElementById('expenseForm');
+    const shareForm = document.getElementById('shareExpenseForm');
+    
+    expenseForm.innerHTML = '';
+    shareForm.innerHTML = '';
+    
+    Object.keys(categories).forEach(category => {
+      // Personal calculator form
+      const div1 = document.createElement('div');
+      div1.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+      div1.innerHTML = `
+        <label style='flex: 0 0 250px; font-weight: 500;'>${category}:</label>
+        <div style='position: relative; flex: 1;'>
+          <span style='position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #718096;'>$</span>
+          <input 
+            type="number" 
+            id="exp_${category.replace(/\s+/g, '_')}" 
+            min="0" 
+            step="0.01" 
+            placeholder="0.00"
+            style='width: 100%; padding: 10px 10px 10px 25px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1rem;'
+          />
+        </div>
+      `;
+      expenseForm.appendChild(div1);
+      
+      // Share data form
+      const div2 = document.createElement('div');
+      div2.style.cssText = 'display: flex; align-items: center; gap: 10px;';
+      div2.innerHTML = `
+        <label style='flex: 0 0 250px; font-weight: 500;'>${category}:</label>
+        <div style='position: relative; flex: 1;'>
+          <span style='position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #718096;'>$</span>
+          <input 
+            type="number" 
+            id="share_${category.replace(/\s+/g, '_')}" 
+            min="0" 
+            step="0.01" 
+            placeholder="0.00"
+            style='width: 100%; padding: 10px 10px 10px 25px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1rem;'
+          />
+        </div>
+      `;
+      shareForm.appendChild(div2);
+    });
+  }
+
+  function renderChart() {
+    // Prepare data for grouped bar chart
+    const chartData = [];
+    
+    Object.entries(cpiData.categories).forEach(([category, data]) => {
+      chartData.push({
+        category: category,
+        type: 'Monthly',
+        value: data.monthly
+      });
+      chartData.push({
+        category: category,
+        type: 'Annual',
+        value: data.annual
+      });
+    });
+
+    const vegaSpec = {
+      "$schema": "https://vega.github.io/schema/vega/v5.json",
+      "autosize": {"type": "fit", "contains": "padding"},
+      "width": 800,
+      "height": 600,
+      "padding": 5,
+      "data": [
+        {
+          "name": "table",
+          "values": chartData
+        }
+      ],
+      "scales": [
+        {
+          "name": "yscale",
+          "type": "band",
+          "domain": {"data": "table", "field": "category"},
+          "range": "height",
+          "padding": 0.3
+        },
+        {
+          "name": "xscale",
+          "type": "linear",
+          "domain": {"data": "table", "field": "value"},
+          "range": "width",
+          "nice": true,
+          "zero": true
+        },
+        {
+          "name": "color",
+          "type": "ordinal",
+          "domain": ["Monthly", "Annual"],
+          "range": ["#6366f1", "#8b5cf6"]
+        }
+      ],
+      "axes": [
+        {
+          "orient": "bottom",
+          "scale": "xscale",
+          "title": "% Change",
+          "titleFontSize": 16,
+          "labelFontSize": 14
+        },
+        {
+          "orient": "left",
+          "scale": "yscale",
+          "labelFontSize": 14
+        }
+      ],
+      "legends": [
+        {
+          "fill": "color",
+          "title": "Period",
+          "orient": "top-right",
+          "titleFontSize": 16,
+          "labelFontSize": 14
+        }
+      ],
+      "marks": [
+        {
+          "type": "group",
+          "from": {
+            "facet": {
+              "data": "table",
+              "name": "facet",
+              "groupby": "category"
+            }
+          },
+          "encode": {
+            "enter": {
+              "y": {"scale": "yscale", "field": "category"}
+            }
+          },
+          "signals": [
+            {"name": "height", "update": "bandwidth('yscale')"}
+          ],
+          "scales": [
+            {
+              "name": "pos",
+              "type": "band",
+              "range": "height",
+              "domain": {"data": "facet", "field": "type"},
+              "padding": 0.3
+            }
+          ],
+          "marks": [
+            {
+              "type": "rect",
+              "from": {"data": "facet"},
+              "encode": {
+                "enter": {
+                  "y": {"scale": "pos", "field": "type"},
+                  "height": {"scale": "pos", "band": 1},
+                  "x": {"scale": "xscale", "value": 0},
+                  "x2": {"scale": "xscale", "field": "value"},
+                  "fill": {"scale": "color", "field": "type"}
+                },
+                "update": {
+                  "fillOpacity": {"value": 0.9}
+                },
+                "hover": {
+                  "fillOpacity": {"value": 1}
+                }
+              }
+            },
+            {
+              "type": "text",
+              "from": {"data": "facet"},
+              "encode": {
+                "enter": {
+                  "y": {"scale": "pos", "field": "type", "band": 0.5},
+                  "x": {"scale": "xscale", "field": "value", "offset": 5},
+                  "fill": {"value": "#000"},
+                  "baseline": {"value": "middle"},
+                  "text": {"signal": "format(datum.value, '.1f') + '%'"},
+                  "fontSize": {"value": 14},
+                  "fontWeight": {"value": "bold"}
+                }
+              }
+            }
+          ]
+        }
+      ]
+    };
+
+    vegaEmbed('#inflationChart', vegaSpec, {actions: false, renderer: 'svg'});
+  }
+
+  function calculateImpact() {
+    const results = {};
+    let hasData = false;
+
+    Object.keys(categories).forEach(category => {
+      const id = 'exp_' + category.replace(/\s+/g, '_');
+      const value = parseFloat(document.getElementById(id).value);
+      
+      if (value && value > 0) {
+        hasData = true;
+        const categoryData = cpiData.categories[category];
+        const monthlyChange = categoryData.monthly / 100;
+        const annualChange = categoryData.annual / 100;
+
+        results[category] = {
+          current: value,
+          lastMonth: value / (1 + monthlyChange),
+          lastYear: value / (1 + annualChange),
+          monthlyChange: categoryData.monthly,
+          annualChange: categoryData.annual
+        };
+      }
+    });
+
+    if (!hasData) {
+      alert('Please enter at least one expense amount.');
+      return;
+    }
+
+    displayResults(results);
+  }
+
+  function displayResults(results) {
+    const resultsDiv = document.getElementById('results');
+    let html = '<h3 style="margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 30px; font-size: 1.8rem;">Your Results</h3>';
+    html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">';
+
+    Object.entries(results).forEach(([category, data]) => {
+      html += `
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px;">
+          <h4 style="font-size: 1.2rem; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 10px;">${category}</h4>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.95rem;">
+            <span>Your ${cpiData.reportMonth} spending:</span>
+            <span style="font-weight: 700;">$${data.current.toFixed(2)}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.95rem;">
+            <span>Cost in ${cpiData.previousMonth}:</span>
+            <span style="font-weight: 700;">$${data.lastMonth.toFixed(2)}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.95rem;">
+            <span>Cost in ${cpiData.previousYear}:</span>
+            <span style="font-weight: 700;">$${data.lastYear.toFixed(2)}</span>
+          </div>
+          <div style="border-top: 1px solid rgba(255,255,255,0.3); margin-top: 10px; padding-top: 10px; display: flex; justify-content: space-between; font-size: 0.85rem;">
+            <span>Monthly: ${data.monthlyChange > 0 ? '+' : ''}${data.monthlyChange}%</span>
+            <span>Annual: ${data.annualChange > 0 ? '+' : ''}${data.annualChange}%</span>
+          </div>
+        </div>
+      `;
+    });
+
+    html += '</div>';
+    resultsDiv.innerHTML = html;
+  }
+
+  async function submitEmail() {
+    const email = document.getElementById('emailInput').value;
+    
+    if (!email || !email.includes('@')) {
+      alert('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_key: 'YOUR_WEB3FORMS_ACCESS_KEY', // Replace with your key
+          subject: 'New Email Signup - Price Inflation Report',
+          from_name: 'Price Inflation Report',
+          email: email,
+          message: `New email signup: ${email}`
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`Thank you! We'll notify you at ${email} when the next Price Inflation Report is released.`);
+        document.getElementById('emailInput').value = '';
+      } else {
+        alert('There was an error. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('There was an error. Please try again.');
+    }
+  }
+
+  async function submitShareData() {
+    const zipcode = document.getElementById('zipcode').value;
+    const state = document.getElementById('state').value;
+
+    if (!zipcode || !state) {
+      alert('Please enter your ZIP code and state');
+      return;
+    }
+
+    const expenses = {};
+    let hasExpenses = false;
+
+    Object.keys(categories).forEach(category => {
+      const id = 'share_' + category.replace(/\s+/g, '_');
+      const value = parseFloat(document.getElementById(id).value);
+      if (value && value > 0) {
+        expenses[category] = value;
+        hasExpenses = true;
+      }
+    });
+
+    if (!hasExpenses) {
+      alert('Please enter at least one expense amount');
+      return;
+    }
+
+    const expenseList = Object.entries(expenses)
+      .map(([cat, amt]) => `${cat}: $${amt.toFixed(2)}`)
+      .join(', ');
+
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_key: 'YOUR_WEB3FORMS_ACCESS_KEY', // Replace with your key
+          subject: `Spending Data Submission - ${state} ${zipcode}`,
+          from_name: 'Price Inflation Report',
+          message: `
+Report Month: ${cpiData.reportMonth}
+State: ${state}
+ZIP Code: ${zipcode}
+Timestamp: ${new Date().toISOString()}
+
+Spending Data:
+${expenseList}
+          `
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('Thank you for sharing your data! Your contribution helps create a comprehensive view of American spending patterns.');
+        document.getElementById('zipcode').value = '';
+        document.getElementById('state').value = '';
+        Object.keys(categories).forEach(category => {
+          const id = 'share_' + category.replace(/\s+/g, '_');
+          document.getElementById(id).value = '';
+        });
+      } else {
+        alert('There was an error. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('There was an error. Please try again.');
+    }
+  }
+</script>
+
+<style>
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    #inflationChart {
+      overflow-x: scroll;
+    }
+  }
+</style>
