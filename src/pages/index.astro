@@ -338,8 +338,8 @@ import { Card } from '@eliancodes/brutal-ui';
     const vegaSpec = {
       "$schema": "https://vega.github.io/schema/vega/v6.json",
       "background": "white",
-      "autosize": {"type": "fit", "contains": "padding"},
-      "width": "container",
+      "autosize": {"type": "fit-x", "contains": "padding"},
+      "width": chartWidth,
       "height": chartHeight,
       "padding": 5,
       "data": [
@@ -648,9 +648,10 @@ ${expenseList}
 
 <style>
   /* Responsive adjustments */
-  @media (max-width: 768px) {
     #inflationChart {
-      overflow-x: scroll;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
     }
-  }
+  
 </style>
