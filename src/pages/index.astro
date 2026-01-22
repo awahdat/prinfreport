@@ -381,9 +381,7 @@ import { Card } from '@eliancodes/brutal-ui';
         {
           "orient": "left",
           "scale": "yscale",
-          "labelFontSize": isMobile ? 11 : 14,
-          "labelLimit": isMobile ? 80 : 200,
-          "labelAngle": isMobile ? -30 : 0
+          "labelFontSize": isMobile ? 11 : 14
         }
       ],
       "legends": [
@@ -463,7 +461,14 @@ import { Card } from '@eliancodes/brutal-ui';
     };
 
     console.log('Calling vegaEmbed');
-    vegaEmbed('#inflationChart', vegaSpec, {actions: false, renderer: 'svg'})
+    vegaEmbed('#inflationChart', vegaSpec, {
+      renderer: 'svg',
+      actions: {
+        export: true,
+        source: false,
+        editor: false
+      }
+    })
       .then(() => console.log('Chart rendered successfully'))
       .catch(err => console.error('Chart rendering error:', err));
   }
