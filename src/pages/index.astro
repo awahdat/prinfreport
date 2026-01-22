@@ -93,7 +93,7 @@ import { Card } from '@eliancodes/brutal-ui';
       <Card>
           <h2 class='text-3xl md:text-5xl mb-4'>Help Build America's Spending Report</h2>
           <p class='text-lg mb-6'>
-            If you're willing to share your spending data, we'll use it to create a monthly report showing average spending across the United States. The aggregated results will be available to all Americans the following month, helping everyone understand real spending patterns in our economy.
+            If you're willing to share your spending data, we'll use it to create a monthly report showing average spending across the United States. The aggregated results will be available through this website the following month, helping everyone understand real spending patterns in our economy.
           </p>
           
           <div style='background: #fffaf0; border-left: 4px solid #ed8936; padding: 15px; margin-bottom: 20px;'>
@@ -238,7 +238,7 @@ import { Card } from '@eliancodes/brutal-ui';
   function renderPage() {
     // Update report date
     document.getElementById('reportDate').innerHTML = 
-      `📅 Latest Report: ${cpiData.reportMonth} (Released ${cpiData.reportDate})`;
+      `📅 Latest Report: ${cpiData.reportMonth} (Released ${cpiData.reportDate}). Note that "All Items" refers to the total basket of goods and services that households buy.`;
     
     document.getElementById('calculatorDesc').innerHTML = 
       `Enter your monthly spending for ${cpiData.reportMonth} in any categories below to see what those expenses would have cost in ${cpiData.previousMonth} and ${cpiData.previousYear}.`;
@@ -333,12 +333,12 @@ import { Card } from '@eliancodes/brutal-ui';
 // Determine width based on screen size
     const isMobile = window.innerWidth < 768;
     const chartWidth = isMobile ? 600 : 900;
-    const chartHeight = isMobile ? 700 : 650;
+    const chartHeight = isMobile ? 900 : 650;
 
     const vegaSpec = {
       "$schema": "https://vega.github.io/schema/vega/v6.json",
       "autosize": {"type": "fit", "contains": "padding"},
-      "width": chartWidth,
+      "width": container,
       "height": chartHeight,
       "padding": 5,
       "data": [
@@ -382,6 +382,8 @@ import { Card } from '@eliancodes/brutal-ui';
           "orient": "left",
           "scale": "yscale",
           "labelFontSize": isMobile ? 11 : 14
+          "labelLimit": isMobile ? 80 : 200,
+          "labelAngle": isMobile ? -30 : 0
         }
       ],
       "legends": [
@@ -461,7 +463,14 @@ import { Card } from '@eliancodes/brutal-ui';
     };
 
     console.log('Calling vegaEmbed');
-    vegaEmbed('#inflationChart', vegaSpec, {actions: false, renderer: 'svg'})
+    vegaEmbed('#inflationChart', vegaSpec, {
+      renderer: 'svg',
+      actions: {
+        export: true,
+        source: false,
+        editor: false
+      }
+    })
       .then(() => console.log('Chart rendered successfully'))
       .catch(err => console.error('Chart rendering error:', err));
   }
