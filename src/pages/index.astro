@@ -150,21 +150,20 @@ import { Card } from '@eliancodes/brutal-ui';
 <script is:inline src="https://cdn.jsdelivr.net/npm/vega-embed@7"></script>
 
 <script is:inline>
-  // CPI Categories with BLS Series IDs
-  const categories = {
-    'All Items': 'CUSR0000SA0',
-    'Food': 'CUSR0000SAF',
-    'Food at Home': 'CUSR0000SAF11',
-    'Food Away from Home': 'CUSR0000SEFV',
-    'Gasoline': 'CUSR0000SETB01',
-    'Electricity': 'CUSR0000SEHF01',
-    'Utility Gas': 'CUSR0000SEHF02',
-    'New Vehicles': 'CUSR0000SETA01',
-    'Used Cars': 'CUSR0000SETA02',
-    'Apparel': 'CUSR0000SAA',
-    'Shelter': 'CUSR0000SAH1',
-    'Transportation Services': 'CUSR0000SAS4',
-    'Medical Care Services': 'CUSR0000SAM2'
+  // CPI Categories to display (matching BLS table names)
+  const categoryMapping = {
+    'All items': 'All Items',
+    'Food': 'Food',
+    'Food at home': 'Food at Home',
+    'Food away from home': 'Food Away from Home',
+    'Gasoline (all types)': 'Gasoline',
+    'Energy services': 'Energy Services',
+    'New vehicles': 'New Vehicles',
+    'Used cars and trucks': 'Used Cars and Trucks',
+    'Apparel': 'Apparel',
+    'Shelter': 'Shelter',
+    'Transportation services': 'Transportation Services',
+    'Medical care services': 'Medical Services'
   };
 
   const states = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'];
@@ -174,7 +173,7 @@ import { Card } from '@eliancodes/brutal-ui';
   // Initialize function
   function initializePage() {
     populateStates();
-    fetchCPIData();
+    loadMockData();
   }
 
   // Run on initial load
@@ -187,6 +186,17 @@ import { Card } from '@eliancodes/brutal-ui';
   // Re-run when navigating back to this page (for SPA routing)
   document.addEventListener('astro:page-load', initializePage);
 
+  // Re-render chart on window resize for responsive behavior
+  let resizeTimeout;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(function() {
+      if (cpiData) {
+        renderChart();
+      }
+    }, 250);
+  });
+
   function populateStates() {
     const stateSelect = document.getElementById('state');
     states.forEach(state => {
@@ -197,37 +207,7 @@ import { Card } from '@eliancodes/brutal-ui';
     });
   }
 
-  // Fetch CPI Data from BLS API
-  async function fetchCPIData() {
-    // PRODUCTION: Use real BLS API
-    // Uncomment and add your BLS API key from https://data.bls.gov/registrationEngine/
-    /*
-    const BLS_API_KEY = 'YOUR_BLS_API_KEY';
-    const currentYear = new Date().getFullYear();
-    const seriesIds = Object.values(categories);
-    
-    try {
-      const response = await fetch('https://api.bls.gov/publicAPI/v2/timeseries/data/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          seriesid: seriesIds,
-          startyear: currentYear - 1,
-          endyear: currentYear,
-          registrationkey: BLS_API_KEY
-        })
-      });
-      
-      const data = await response.json();
-      cpiData = processBLSData(data);
-      renderPage();
-    } catch (error) {
-      console.error('Error fetching BLS data:', error);
-      useMockData();
-    }
-    */
-    
-    // DEVELOPMENT: Use mock data
+  function loadMockData() {
     useMockData();
   }
 
@@ -243,30 +223,22 @@ import { Card } from '@eliancodes/brutal-ui';
         'Food at Home': { monthly: 0.2, annual: 1.8 },
         'Food Away from Home': { monthly: 0.3, annual: 3.6 },
         'Gasoline': { monthly: -0.6, annual: -8.1 },
-        'Electricity': { monthly: 0.2, annual: 3.8 },
-        'Utility Gas': { monthly: 1.2, annual: -4.2 },
+        'Energy Services': { monthly: 0.2, annual: 3.8 },
         'New Vehicles': { monthly: 0.1, annual: 1.2 },
-        'Used Cars': { monthly: 2.0, annual: 3.8 },
+        'Used Cars and Trucks': { monthly: 2.0, annual: 3.8 },
         'Apparel': { monthly: 0.0, annual: 0.5 },
         'Shelter': { monthly: 0.3, annual: 4.7 },
         'Transportation Services': { monthly: 0.3, annual: 8.6 },
-        'Medical Care Services': { monthly: 0.2, annual: 3.5 }
+        'Medical Services': { monthly: 0.2, annual: 3.5 }
       }
     };
     renderPage();
   }
 
-  function processBLSData(data) {
-    // Process BLS API response and calculate monthly/annual changes
-    // This function would parse the API response and calculate inflation rates
-    // Implementation depends on BLS API response structure
-    return data;
-  }
-
   function renderPage() {
     // Update report date
     document.getElementById('reportDate').innerHTML = 
-      `Latest Report: ${cpiData.reportMonth} (Released ${cpiData.reportDate})`;
+      `📅 Latest Report: ${cpiData.reportMonth} (Released ${cpiData.reportDate})`;
     
     document.getElementById('calculatorDesc').innerHTML = 
       `Enter your monthly spending for ${cpiData.reportMonth} in any categories below to see what those expenses would have cost in ${cpiData.previousMonth} and ${cpiData.previousYear}.`;
@@ -285,7 +257,10 @@ import { Card } from '@eliancodes/brutal-ui';
     expenseForm.innerHTML = '';
     shareForm.innerHTML = '';
     
-    Object.keys(categories).forEach(category => {
+    // Use categories from the fetched data
+    const categories = Object.keys(cpiData.categories);
+    
+    categories.forEach(category => {
       // Personal calculator form
       const div1 = document.createElement('div');
       div1.style.cssText = 'display: flex; flex-direction: column; gap: 5px;';
@@ -326,7 +301,17 @@ import { Card } from '@eliancodes/brutal-ui';
     });
   }
 
+
   function renderChart() {
+    console.log('renderChart called');
+    
+    // Check if vegaEmbed is available
+    if (typeof vegaEmbed === 'undefined') {
+      console.error('vegaEmbed is not loaded');
+      setTimeout(renderChart, 100);
+      return;
+    }
+
     // Prepare data for grouped bar chart
     const chartData = [];
     
@@ -342,6 +327,8 @@ import { Card } from '@eliancodes/brutal-ui';
         value: data.annual
       });
     });
+
+    console.log('Chart data prepared:', chartData);
 
 // Determine width based on screen size
     const isMobile = window.innerWidth < 768;
@@ -473,14 +460,19 @@ import { Card } from '@eliancodes/brutal-ui';
       ]
     };
 
-    vegaEmbed('#inflationChart', vegaSpec, {actions: false, renderer: 'svg'});
+    console.log('Calling vegaEmbed');
+    vegaEmbed('#inflationChart', vegaSpec, {actions: false, renderer: 'svg'})
+      .then(() => console.log('Chart rendered successfully'))
+      .catch(err => console.error('Chart rendering error:', err));
   }
 
   function calculateImpact() {
     const results = {};
     let hasData = false;
+    
+    const categories = Object.keys(cpiData.categories);
 
-    Object.keys(categories).forEach(category => {
+    categories.forEach(category => {
       const id = 'exp_' + category.replace(/\s+/g, '_');
       const value = parseFloat(document.getElementById(id).value);
       
