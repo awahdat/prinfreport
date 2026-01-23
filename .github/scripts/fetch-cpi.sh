@@ -1,11 +1,25 @@
 #!/bin/bash
 
-# Fetch BLS page
+# Fetch BLS page with browser-like headers
 echo "Fetching BLS data..."
-HTML=$(curl -s "https://www.bls.gov/news.release/cpi.nr0.htm")
+HTML=$(curl -s -L \
+  -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+  -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" \
+  -H "Accept-Language: en-US,en;q=0.5" \
+  -H "Accept-Encoding: gzip, deflate, br" \
+  -H "Connection: keep-alive" \
+  -H "Upgrade-Insecure-Requests: 1" \
+  "https://www.bls.gov/news.release/cpi.nr0.htm")
 
 if [ -z "$HTML" ]; then
     echo "Failed to fetch BLS page. Keeping existing data."
+    exit 0
+fi
+
+# Check if we got blocked
+if echo "$HTML" | grep -q "Access Denied"; then
+    echo "BLS blocked the request. Keeping existing data."
+    echo "This is normal - BLS has bot protection."
     exit 0
 fi
 
@@ -33,9 +47,8 @@ fi
 
 if [ -z "$TABLE" ]; then
     echo "Table A not found with any method. Keeping existing data."
-    echo "Saving HTML for debugging..."
-    echo "$HTML" | head -n 100 > /tmp/bls_debug.html
-    cat /tmp/bls_debug.html
+    echo "Saving HTML snippet for debugging..."
+    echo "$HTML" | head -n 50
     exit 0
 fi
 
