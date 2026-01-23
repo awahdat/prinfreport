@@ -2,6 +2,10 @@
 
 # Fetch BLS page with browser-like headers
 echo "Fetching BLS data..."
+
+# Add random delay (1-5 seconds) to avoid rate limiting
+sleep $((1 + RANDOM % 5))
+
 HTML=$(curl -s -L \
   -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
   -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" \
