@@ -9,86 +9,79 @@ if [ -z "$HTML" ]; then
     exit 0
 fi
 
-# Extract Table A (find table after "Table A" text)
-# Extract first CPI table directly
-TABLE=$(echo "$HTML" | sed -n '/<table/,/<\/table>/p' | head -n 200)
-
-echo "Table preview:"
-echo "$TABLE" | head -n 20
-
+# Extract Table A (the first table with id="cpi_pressa")
+TABLE=$(echo "$HTML" | sed -n '/<table.*id="cpi_pressa"/,/<\/table>/p')
 
 if [ -z "$TABLE" ]; then
     echo "Table A not found. Keeping existing data."
     exit 0
 fi
 
-# Function to extract value from table row
-extract_value() {
-    local category="$1"
-    local column_offset="$2"  # -2 for monthly, -1 for annual
+# Extract report month from the last <th> in the second header row
+# This is the "Dec. 2025" column header
+REPORT_MONTH=$(echo "$TABLE" | grep -A1 'Seasonally adjusted' | tail -1 | grep -oP '(?<=<th[^>]*>)[^<]*(?=<br />2025</th>)' | tail -1)
+REPORT_YEAR=$(echo "$TABLE" | grep -A1 'Seasonally adjusted' | tail -1 | grep -oP '2025(?=</th>)' | tail -1)
+
+# Combine month and year
+FULL_MONTH="${REPORT_MONTH} ${REPORT_YEAR}"
+
+if [ -z "$FULL_MONTH" ]; then
+    FULL_MONTH="Latest Month"
+fi
+
+echo "Report month: $FULL_MONTH"
+
+# Function to extract values for a specific category
+extract_category_data() {
+    local search_pattern="$1"
+    local display_name="$2"
     
-    # Find the row containing the category
-    ROW=$(echo "$TABLE" | grep -i "$category" | head -1)
+    # Find the row containing this category
+    local row=$(echo "$TABLE" | grep -i "<p class=\"sub[0-9]\">$search_pattern</p>" | head -1)
     
-    if [ -z "$ROW" ]; then
-        echo "0.0"
+    if [ -z "$row" ]; then
+        echo "  $display_name: NOT FOUND"
         return
     fi
     
-    # Extract all <td> values
-    VALUES=$(echo "$ROW" | grep -oP '(?<=<td[^>]*>)[^<]+(?=</td>)')
+    # Extract all datavalues from the row
+    local values=$(echo "$row" | grep -oP '(?<=<span class="datavalue">)[^<]+(?=</span>)')
     
-    # Get the specific column (second-to-last or last)
-    if [ "$column_offset" -eq "-2" ]; then
-        VALUE=$(echo "$VALUES" | tail -2 | head -1)
-    else
-        VALUE=$(echo "$VALUES" | tail -1)
+    # Get second-to-last value (monthly) and last value (annual)
+    local monthly=$(echo "$values" | tail -2 | head -1 | tr -d ' ')
+    local annual=$(echo "$values" | tail -1 | tr -d ' ')
+    
+    # Handle dash (-) as 0.0
+    if [ "$monthly" = "-" ]; then
+        monthly="0.0"
     fi
-    
-    # Clean up (remove spaces, convert to number)
-    VALUE=$(echo "$VALUE" | tr -d ' ' | grep -oP '[-]?[0-9]+\.[0-9]+|[-]?[0-9]+')
-    
-    echo "${VALUE:-0.0}"
-}
-
-# Extract report month from second-to-last column header
-HEADER_ROW=$(echo "$TABLE" | grep -m1 '<th' | head -1)
-REPORT_MONTH=$(echo "$HEADER_ROW" | grep -oP '(?<=<th[^>]*>)[^<]+(?=</th>)' | tail -2 | head -1 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-
-if [ -z "$REPORT_MONTH" ]; then
-    REPORT_MONTH="Latest Month"
-fi
-
-echo "Report month: $REPORT_MONTH"
-
-# Extract data for each category
-declare -A CATEGORIES
-CATEGORIES["All items"]="All Items"
-CATEGORIES["Food"]="Food"
-CATEGORIES["Food at home"]="Food at Home"
-CATEGORIES["Food away from home"]="Food Away from Home"
-CATEGORIES["Gasoline (all types)"]="Gasoline"
-CATEGORIES["Energy services"]="Energy Services"
-CATEGORIES["New vehicles"]="New Vehicles"
-CATEGORIES["Used cars and trucks"]="Used Cars and Trucks"
-CATEGORIES["Apparel"]="Apparel"
-CATEGORIES["Shelter"]="Shelter"
-CATEGORIES["Transportation services"]="Transportation Services"
-CATEGORIES["Medical care services"]="Medical Services"
-
-# Build JSON object
-JSON_DATA="{"
-
-for key in "${!CATEGORIES[@]}"; do
-    display_name="${CATEGORIES[$key]}"
-    monthly=$(extract_value "$key" -2)
-    annual=$(extract_value "$key" -1)
+    if [ "$annual" = "-" ]; then
+        annual="0.0"
+    fi
     
     echo "  $display_name: monthly=$monthly, annual=$annual"
     
+    # Add to JSON
     JSON_DATA="${JSON_DATA}
         '${display_name}': { monthly: ${monthly}, annual: ${annual} },"
-done
+}
+
+# Initialize JSON object
+JSON_DATA="{"
+
+# Extract data for each category (using exact text from HTML)
+extract_category_data "All items" "All Items"
+extract_category_data "Food" "Food"
+extract_category_data "Food at home" "Food at Home"
+extract_category_data "Food away from home" "Food Away from Home"
+extract_category_data "Gasoline \\(all types\\)" "Gasoline"
+extract_category_data "Energy services" "Energy Services"
+extract_category_data "New vehicles" "New Vehicles"
+extract_category_data "Used cars and trucks" "Used Cars and Trucks"
+extract_category_data "Apparel" "Apparel"
+extract_category_data "Shelter" "Shelter"
+extract_category_data "Transportation services" "Transportation Services"
+extract_category_data "Medical care services" "Medical Services"
 
 # Remove trailing comma
 JSON_DATA="${JSON_DATA%,}"
@@ -127,15 +120,15 @@ get_previous_year() {
     fi
 }
 
-PREV_MONTH=$(get_previous_month "$REPORT_MONTH")
-PREV_YEAR=$(get_previous_year "$REPORT_MONTH")
+PREV_MONTH=$(get_previous_month "$FULL_MONTH")
+PREV_YEAR=$(get_previous_year "$FULL_MONTH")
 REPORT_DATE=$(date +'%B %d, %Y')
 
 # Create the new mock data function
 NEW_MOCK_DATA="  function useMockData() {
     cpiData = {
       reportDate: '$REPORT_DATE',
-      reportMonth: '$REPORT_MONTH',
+      reportMonth: '$FULL_MONTH',
       previousMonth: '$PREV_MONTH',
       previousYear: '$PREV_YEAR',
       categories: ${JSON_DATA}
