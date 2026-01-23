@@ -23,8 +23,8 @@ fi
 
 echo "Valid HTML received. Parsing table..."
 
-# Extract Table A by ID
-TABLE=$(echo "$HTML" | sed -n '/<table.*id="cpi_pressa"/,/<\/table>/p')
+# Extract Table A by ID - get entire table on one line
+TABLE=$(echo "$HTML" | tr '\n' ' ' | grep -oP '<table[^>]*id="cpi_pressa"[^>]*>.*?</table>')
 
 if [ -z "$TABLE" ]; then
     echo "Table with id=cpi_pressa not found. Keeping existing data."
@@ -33,13 +33,8 @@ fi
 
 echo "Table found! Extracting data..."
 
-# Extract report month and year from the last column header (Dec. 2025)
-MONTH_YEAR=$(echo "$TABLE" | grep -oP '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.\s*<br\s*/>\s*20[0-9]{2}' | tail -1 | sed 's/<br[^>]*>//' | sed 's/\s\+/ /')
-
-# If not found, try simpler pattern
-if [ -z "$MONTH_YEAR" ]; then
-    MONTH_YEAR=$(echo "$TABLE" | grep -oP '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.\s*20[0-9]{2}' | tail -1)
-fi
+# Extract report month and year from the last column header
+MONTH_YEAR=$(echo "$TABLE" | grep -oP '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.\s*<br\s*/>\s*20[0-9]{2}' | tail -1 | sed 's/<br[^>]*>/ /')
 
 REPORT_MONTH=$(echo "$MONTH_YEAR" | grep -oP '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)')
 REPORT_YEAR=$(echo "$MONTH_YEAR" | grep -oP '20[0-9]{2}')
@@ -68,28 +63,31 @@ extract_category_data() {
     local search_text="$1"
     local display_name="$2"
     
-    # Find the complete row for this category
-    # Look for the text within <p> tags, then get the entire <tr> row
-    local row=$(echo "$TABLE" | grep -B1 -A1 "$search_text" | grep -A1 "<tr" | head -5)
+    # Find the row containing this category text
+    # Extract the entire <tr>...</tr> containing the search text
+    local row=$(echo "$TABLE" | grep -oP "<tr[^>]*>.*?${search_text}.*?</tr>" | head -1)
     
     if [ -z "$row" ]; then
-        echo "  $display_name: Row not found for pattern: $search_text"
+        echo "  $display_name: Row not found"
         JSON_DATA="${JSON_DATA}
         '${display_name}': { monthly: 0.0, annual: 0.0 },"
         return
     fi
     
-    # Extract all datavalue spans from this row
-    local all_values=$(echo "$row" | grep -oP '(?<=<span class="datavalue">)[^<]+(?=</span>)' | tr '\n' ' ')
+    # Extract all values from <span class="datavalue">
+    local all_values=$(echo "$row" | grep -oP '(?<=<span class="datavalue">)[^<]+(?=</span>)')
+    
+    # Convert newlines to spaces and create array
+    all_values=$(echo "$all_values" | tr '\n' ' ')
     
     echo "  $display_name - All values: [$all_values]"
     
-    # Convert to array
+    # Split into array
     local values_array=($all_values)
     local num_values=${#values_array[@]}
     
     if [ $num_values -lt 2 ]; then
-        echo "  $display_name: Not enough values found"
+        echo "  $display_name: Not enough values found ($num_values)"
         JSON_DATA="${JSON_DATA}
         '${display_name}': { monthly: 0.0, annual: 0.0 },"
         return
@@ -119,17 +117,17 @@ extract_category_data() {
 # Initialize JSON object
 JSON_DATA="{"
 
-# Extract data - use exact text from the HTML
+# Extract data - use exact text patterns from the HTML
 extract_category_data "All items" "All Items"
-extract_category_data ">Food</p>" "Food"
+extract_category_data "<p class=\"sub1\">Food</p>" "Food"
 extract_category_data "Food at home" "Food at Home"
 extract_category_data "Food away from home" "Food Away from Home"
-extract_category_data "Gasoline (all types)" "Gasoline"
+extract_category_data "Gasoline \(all types\)" "Gasoline"
 extract_category_data "Energy services" "Energy Services"
 extract_category_data "New vehicles" "New Vehicles"
 extract_category_data "Used cars and trucks" "Used Cars and Trucks"
-extract_category_data ">Apparel</p>" "Apparel"
-extract_category_data ">Shelter</p>" "Shelter"
+extract_category_data "<p class=\"sub3\">Apparel</p>" "Apparel"
+extract_category_data "<p class=\"sub3\">Shelter</p>" "Shelter"
 extract_category_data "Transportation services" "Transportation Services"
 extract_category_data "Medical care services" "Medical Services"
 
