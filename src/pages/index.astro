@@ -263,6 +263,8 @@ import { Card } from '@eliancodes/brutal-ui';
     categories.forEach(category => {
       // Personal calculator form
       const div1 = document.createElement('div');
+      div1.className = 'expense-item';
+      div1.dataset.category = category;
       div1.style.cssText = 'display: flex; flex-direction: column; gap: 5px;';
       div1.innerHTML = `
         <label style='font-weight: 500; font-size: 0.95rem;'>${category}</label>
@@ -282,6 +284,8 @@ import { Card } from '@eliancodes/brutal-ui';
       
       // Share data form
       const div2 = document.createElement('div');
+      div2.className = 'expense-item';
+      div2.dataset.category = category;
       div2.style.cssText = 'display: flex; flex-direction: column; gap: 5px;';
       div2.innerHTML = `
         <label style='font-weight: 500; font-size: 0.95rem;'>${category}</label>
@@ -653,5 +657,21 @@ ${expenseList}
       max-width: 100%;
       overflow-x: hidden;
     }
+
+/* Desktop layout */
+@media (min-width: 1024px) {
+  #expenseForm,
+  #shareExpenseForm {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  /* All Items spans full row */
+  .expense-item[data-category="All Items"] {
+    grid-column: 1 / -1;
+  }
+}
+
   
 </style>
