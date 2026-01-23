@@ -21,59 +21,28 @@ if echo "$HTML" | grep -q "Access Denied"; then
     exit 0
 fi
 
-# Check if HTML is valid (should start with DOCTYPE or <html)
-if ! echo "$HTML" | head -n 5 | grep -qi "<!DOCTYPE\|<html"; then
-    echo "Invalid HTML response. Keeping existing data."
-    echo "Response preview:"
-    echo "$HTML" | head -n 10
-    exit 0
-fi
-
 echo "Valid HTML received. Parsing table..."
 
-# Try multiple methods to find Table A
-# Method 1: Look for table with id="cpi_pressa"
+# Extract Table A by ID
 TABLE=$(echo "$HTML" | sed -n '/<table.*id="cpi_pressa"/,/<\/table>/p')
 
-# Method 2: If not found, look for first table after "Table A" text
 if [ -z "$TABLE" ]; then
-    echo "Method 1 failed, trying method 2..."
-    TABLE=$(echo "$HTML" | sed -n '/Table A\./,/<\/table>/p' | sed -n '/<table/,/<\/table>/p')
-fi
-
-# Method 3: Look for table with caption containing "Table A"
-if [ -z "$TABLE" ]; then
-    echo "Method 2 failed, trying method 3..."
-    TABLE=$(echo "$HTML" | awk '/<caption>.*Table A/,/<\/table>/')
-fi
-
-# Method 4: Get the first table in the document (usually Table A)
-if [ -z "$TABLE" ]; then
-    echo "Method 3 failed, trying method 4..."
-    TABLE=$(echo "$HTML" | sed -n '/<table/,/<\/table>/p' | head -n 300)
-fi
-
-if [ -z "$TABLE" ]; then
-    echo "Table A not found with any method. Keeping existing data."
-    echo "HTML structure preview:"
-    echo "$HTML" | grep -i "table" | head -n 10
+    echo "Table with id=cpi_pressa not found. Keeping existing data."
     exit 0
 fi
 
 echo "Table found! Extracting data..."
 
-# Extract report month and year from header
-# Look for pattern like "Dec.<br />2025" or "Dec. 2025" in headers
-MONTH_HEADER=$(echo "$TABLE" | grep -oP '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.[^<]*<br\s*/>\s*20[0-9]{2}' | tail -1)
+# Extract report month and year from the last column header (Dec. 2025)
+MONTH_YEAR=$(echo "$TABLE" | grep -oP '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.\s*<br\s*/>\s*20[0-9]{2}' | tail -1 | sed 's/<br[^>]*>//' | sed 's/\s\+/ /')
 
-if [ -z "$MONTH_HEADER" ]; then
-    # Try without <br/> tag
-    MONTH_HEADER=$(echo "$TABLE" | grep -oP '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.\s*20[0-9]{2}' | tail -1)
+# If not found, try simpler pattern
+if [ -z "$MONTH_YEAR" ]; then
+    MONTH_YEAR=$(echo "$TABLE" | grep -oP '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.\s*20[0-9]{2}' | tail -1)
 fi
 
-# Extract month and year
-REPORT_MONTH=$(echo "$MONTH_HEADER" | grep -oP '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.' | sed 's/\.$//')
-REPORT_YEAR=$(echo "$MONTH_HEADER" | grep -oP '20[0-9]{2}')
+REPORT_MONTH=$(echo "$MONTH_YEAR" | grep -oP '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)')
+REPORT_YEAR=$(echo "$MONTH_YEAR" | grep -oP '20[0-9]{2}')
 
 # Expand abbreviated month
 case "$REPORT_MONTH" in
@@ -92,65 +61,57 @@ case "$REPORT_MONTH" in
 esac
 
 FULL_MONTH="${REPORT_MONTH} ${REPORT_YEAR}"
-
-if [ -z "$REPORT_MONTH" ] || [ -z "$REPORT_YEAR" ]; then
-    FULL_MONTH="Latest Month"
-fi
-
 echo "Report month: $FULL_MONTH"
 
 # Function to extract values for a specific category
 extract_category_data() {
-    local search_pattern="$1"
+    local search_text="$1"
     local display_name="$2"
     
-    # Try multiple patterns to find the row
-    local row=""
-    
-    # Pattern 1: Look for exact match in <p> tags
-    row=$(echo "$TABLE" | grep -i "<p[^>]*>$search_pattern</p>" | head -1)
-    
-    # Pattern 2: Look for pattern in <th> tags
-    if [ -z "$row" ]; then
-        row=$(echo "$TABLE" | grep -i "<th[^>]*>[^<]*$search_pattern" | head -1)
-    fi
-    
-    # Pattern 3: Simple grep for the pattern
-    if [ -z "$row" ]; then
-        row=$(echo "$TABLE" | grep -i "$search_pattern" | grep '<td' | head -1)
-    fi
+    # Find the complete row for this category
+    # Look for the text within <p> tags, then get the entire <tr> row
+    local row=$(echo "$TABLE" | grep -B1 -A1 "$search_text" | grep -A1 "<tr" | head -5)
     
     if [ -z "$row" ]; then
-        echo "  $display_name: NOT FOUND (pattern: $search_pattern)"
-        # Use default values
+        echo "  $display_name: Row not found for pattern: $search_text"
         JSON_DATA="${JSON_DATA}
         '${display_name}': { monthly: 0.0, annual: 0.0 },"
         return
     fi
     
-    # Extract all values from <td> or <span class="datavalue"> tags
-    local values=$(echo "$row" | grep -oP '(?<=<span class="datavalue">)[^<]+(?=</span>)')
+    # Extract all datavalue spans from this row
+    local all_values=$(echo "$row" | grep -oP '(?<=<span class="datavalue">)[^<]+(?=</span>)' | tr '\n' ' ')
     
-    # If no datavalue spans found, try extracting from <td> directly
-    if [ -z "$values" ]; then
-        values=$(echo "$row" | grep -oP '(?<=<td[^>]*>)[^<]+(?=</td>)')
+    echo "  $display_name - All values: [$all_values]"
+    
+    # Convert to array
+    local values_array=($all_values)
+    local num_values=${#values_array[@]}
+    
+    if [ $num_values -lt 2 ]; then
+        echo "  $display_name: Not enough values found"
+        JSON_DATA="${JSON_DATA}
+        '${display_name}': { monthly: 0.0, annual: 0.0 },"
+        return
     fi
     
-    # Get second-to-last value (monthly) and last value (annual)
-    local monthly=$(echo "$values" | tail -2 | head -1 | tr -d ' ')
-    local annual=$(echo "$values" | tail -1 | tr -d ' ')
+    # Get second-to-last (monthly) and last (annual) values
+    local monthly_idx=$((num_values - 2))
+    local annual_idx=$((num_values - 1))
     
-    # Handle dash (-) as 0.0 and ensure we have numbers
-    if [ "$monthly" = "-" ] || [ -z "$monthly" ]; then
+    local monthly="${values_array[$monthly_idx]}"
+    local annual="${values_array[$annual_idx]}"
+    
+    # Handle dash as 0.0
+    if [ "$monthly" = "-" ]; then
         monthly="0.0"
     fi
-    if [ "$annual" = "-" ] || [ -z "$annual" ]; then
+    if [ "$annual" = "-" ]; then
         annual="0.0"
     fi
     
     echo "  $display_name: monthly=$monthly, annual=$annual"
     
-    # Add to JSON
     JSON_DATA="${JSON_DATA}
         '${display_name}': { monthly: ${monthly}, annual: ${annual} },"
 }
@@ -158,17 +119,17 @@ extract_category_data() {
 # Initialize JSON object
 JSON_DATA="{"
 
-# Extract data for each category
+# Extract data - use exact text from the HTML
 extract_category_data "All items" "All Items"
-extract_category_data "Food[^<]*</p>" "Food"
+extract_category_data ">Food</p>" "Food"
 extract_category_data "Food at home" "Food at Home"
 extract_category_data "Food away from home" "Food Away from Home"
-extract_category_data "Gasoline.*all types" "Gasoline"
+extract_category_data "Gasoline (all types)" "Gasoline"
 extract_category_data "Energy services" "Energy Services"
 extract_category_data "New vehicles" "New Vehicles"
 extract_category_data "Used cars and trucks" "Used Cars and Trucks"
-extract_category_data "Apparel[^<]*</p>" "Apparel"
-extract_category_data "Shelter[^<]*</p>" "Shelter"
+extract_category_data ">Apparel</p>" "Apparel"
+extract_category_data ">Shelter</p>" "Shelter"
 extract_category_data "Transportation services" "Transportation Services"
 extract_category_data "Medical care services" "Medical Services"
 
