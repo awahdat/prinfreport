@@ -147,6 +147,7 @@ if [ ! -f "$FILE" ]; then
 fi
 
 # Use perl for multi-line regex replacement (available in GitHub Actions)
-perl -i -0pe 's/function useMockData\(\) \{.*?\n  \}/'"$(echo "$NEW_MOCK_DATA" | sed 's/[&/\]/\\&/g')"'/s' "$FILE"
+perl -i -0pe 's/function useMockData\(\)\s*\{[\s\S]*?\}/'"$(echo "$NEW_MOCK_DATA" | sed 's/[&/\]/\\&/g')"'/s' "$FILE"
+
 
 echo "✅ Mock data updated successfully!"
