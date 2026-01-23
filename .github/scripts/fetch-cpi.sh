@@ -10,7 +10,12 @@ if [ -z "$HTML" ]; then
 fi
 
 # Extract Table A (find table after "Table A" text)
-TABLE=$(echo "$HTML" | sed -n '/<.*Table A/,/<\/table>/p' | tail -n +2)
+# Extract first CPI table directly
+TABLE=$(echo "$HTML" | sed -n '/<table/,/<\/table>/p' | head -n 200)
+
+echo "Table preview:"
+echo "$TABLE" | head -n 20
+
 
 if [ -z "$TABLE" ]; then
     echo "Table A not found. Keeping existing data."
@@ -147,9 +152,6 @@ if [ ! -f "$FILE" ]; then
 fi
 
 # Use perl for multi-line regex replacement (available in GitHub Actions)
-perl -i -0pe 's/function useMockData\(\)\s*\{[\s\S]*?\}/'"$(echo "$NEW_MOCK_DATA" | sed 's/[&/\]/\\&/g')"'/s' "$FILE"
-
-echo "----- DIFF AFTER REPLACEMENT -----"
-git diff src/pages/index.astro || echo "NO DIFF"
+perl -i -0pe 's/function useMockData\(\) \{.*?\n  \}/'"$(echo "$NEW_MOCK_DATA" | sed 's/[&/\]/\\&/g')"'/s' "$FILE"
 
 echo "✅ Mock data updated successfully!"
