@@ -17,6 +17,11 @@ jobs:
       - name: Fetch and parse BLS data
         run: |
           bash .github/scripts/fetch-cpi.sh
+
+      - name: Verify index.astro content
+        run: |
+          echo "----- function snippet -----"
+          grep -n "useMockData" src/pages/index.astro || echo "NOT FOUND"
           
       - name: Commit updated data
         run: |
