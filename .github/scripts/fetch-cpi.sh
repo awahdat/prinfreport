@@ -1,16 +1,11 @@
 #!/bin/bash
 
-# Fetch BLS page with browser-like headers
+# Fetch BLS page with browser-like headers and automatic decompression
 echo "Fetching BLS data..."
-
-# Add random delay (1-5 seconds) to avoid rate limiting
-sleep $((1 + RANDOM % 5))
-
-HTML=$(curl -s -L \
+HTML=$(curl -s -L --compressed \
   -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
   -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" \
   -H "Accept-Language: en-US,en;q=0.5" \
-  -H "Accept-Encoding: gzip, deflate, br" \
   -H "Connection: keep-alive" \
   -H "Upgrade-Insecure-Requests: 1" \
   "https://www.bls.gov/news.release/cpi.nr0.htm")
@@ -23,9 +18,18 @@ fi
 # Check if we got blocked
 if echo "$HTML" | grep -q "Access Denied"; then
     echo "BLS blocked the request. Keeping existing data."
-    echo "This is normal - BLS has bot protection."
     exit 0
 fi
+
+# Check if HTML is valid (should start with DOCTYPE or <html)
+if ! echo "$HTML" | head -n 5 | grep -qi "<!DOCTYPE\|<html"; then
+    echo "Invalid HTML response. Keeping existing data."
+    echo "Response preview:"
+    echo "$HTML" | head -n 10
+    exit 0
+fi
+
+echo "Valid HTML received. Parsing table..."
 
 # Try multiple methods to find Table A
 # Method 1: Look for table with id="cpi_pressa"
@@ -40,7 +44,7 @@ fi
 # Method 3: Look for table with caption containing "Table A"
 if [ -z "$TABLE" ]; then
     echo "Method 2 failed, trying method 3..."
-    TABLE=$(echo "$HTML" | awk '/<caption>.*Table A/,/<\/table>/' | sed -n '/<table/,/<\/table>/p')
+    TABLE=$(echo "$HTML" | awk '/<caption>.*Table A/,/<\/table>/')
 fi
 
 # Method 4: Get the first table in the document (usually Table A)
@@ -51,8 +55,8 @@ fi
 
 if [ -z "$TABLE" ]; then
     echo "Table A not found with any method. Keeping existing data."
-    echo "Saving HTML snippet for debugging..."
-    echo "$HTML" | head -n 50
+    echo "HTML structure preview:"
+    echo "$HTML" | grep -i "table" | head -n 10
     exit 0
 fi
 
