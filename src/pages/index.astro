@@ -215,24 +215,22 @@ import { Card } from '@eliancodes/brutal-ui';
     useMockData();
   }
 
-            function useMockData() {
+              function useMockData() {
     cpiData = {
       reportDate: 'January 24, 2026',
-      reportMonth: 'December 2025',
-      previousMonth: 'November',
-      previousYear: 'December 2024',
+      reportMonth: ' 2025',
       categories: {
-        'All Items': { monthly: 0.3, annual: 2.7 },
-        'Housing': { monthly: 0.2, annual:  },
-        'Food and Beverages': { monthly: 0.2, annual:  },
-        'Transportation': { monthly: 0.2, annual:  },
-        'Medical Care': { monthly: 0.2, annual:  },
-        'Education': { monthly: 0.2, annual:  },
-        'Communication': { monthly: 0.2, annual:  },
-        'Recreation': { monthly: 0.2, annual:  },
-        'Apparel': { monthly: 0.6, annual: 0.6 },
-        'Other Goods and Services': { monthly: 0.2, annual:  }
-      }
+    'All Items': { monthly: 0.3, annual: 2.7 },
+    'Housing': { monthly: 3., annual:  },
+    'Food and Beverages': { monthly: 3., annual:  },
+    'Transportation': { monthly: 3., annual:  },
+    'Medical Care': { monthly: 3., annual:  },
+    'Education': { monthly: 0.0, annual: 0.0 },
+    'Communication': { monthly: 0.0, annual: 0.0 },
+    'Recreation': { monthly: 0.0, annual: 0.0 },
+    'Apparel': { monthly: 0.6, annual: 0.6 },
+    'Other Goods and Services': { monthly: 3., annual:  }
+}
     };
     renderPage();
   }
