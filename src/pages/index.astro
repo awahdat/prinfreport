@@ -17,8 +17,11 @@ import { Card } from '@eliancodes/brutal-ui';
       <!-- Header -->
       <Card>
         <h1 class='text-5xl md:text-7xl mb-4'>Price Inflation Report</h1>
-        <p class='text-xl md:text-2xl mb-6'>
+        <p class='text-xl md:text-2xl mb-2'>
           To help Americans understand the changing prices in the economy and in their daily life.
+        </p>
+        <p class='text-base md:text-lg text-gray-600'>
+          <strong>How fast are your prices rising?</strong> Enter your monthly expenses below to see your personal inflation.
         </p>
       </Card>
 
@@ -46,7 +49,7 @@ import { Card } from '@eliancodes/brutal-ui';
 
       <!-- Personal Calculator -->
       <Card>
-        <h2 class='text-3xl md:text-5xl mb-4'>Calculate Your Personal Impact</h2>
+        <h2 class='text-3xl md:text-5xl mb-4'>Calculate Your Personal Inflation</h2>
         <div style='background: #f0fff4; border-left: 4px solid #48bb78; padding: 15px; margin-bottom: 20px;'>
           <p class='text-base'>
             <strong>🔒 Privacy Notice:</strong> We won't store or sell the spending data you enter for calculating the impact of inflation on you.
@@ -63,7 +66,10 @@ import { Card } from '@eliancodes/brutal-ui';
         >
           Calculate My Inflation Impact
         </button>
-        
+
+        <!-- Personal Inflation Summary (NEW) -->
+        <div id="personalInflationSummary"></div>
+
         <div id="results"></div>
       </Card>
 
@@ -136,7 +142,7 @@ import { Card } from '@eliancodes/brutal-ui';
 
       <!-- Footer -->
       <Card>
-        <div style='text-align: center; color: #718096;'>
+        <div style='text-align: center; color: #000000;'>
           <p class='text-base'>Data source: U.S. Bureau of Labor Statistics (BLS)</p>
           <p class='text-base mt-2'>Updated monthly when new CPI data is released</p>
         </div>
@@ -512,7 +518,65 @@ import { Card } from '@eliancodes/brutal-ui';
     displayResults(results);
   }
 
+  // ==============================
+  // NEW: Calculate Personal Inflation
+  // ==============================
+  function calculatePersonalInflation(results) {
+    let totalSpending = 0;
+    let weightedInflation = 0;
+    let categoryCount = 0;
+  
+    Object.entries(results).forEach(([category, data]) => {
+      const spending = data.current;
+      const inflationRate = cpiData.categories[category].annual;
+  
+      totalSpending += spending;
+      weightedInflation += spending * inflationRate;
+      categoryCount++;
+    });
+  
+    const personalInflation = weightedInflation / totalSpending;
+    const nationalInflation = cpiData.categories["All Items"].annual;
+    const gap = personalInflation - nationalInflation;
+  
+    return {
+      personalInflation,
+      nationalInflation,
+      gap,
+      categoryCount,
+      totalCategories: Object.keys(cpiData.categories).length
+    };
+  }
+
+
   function displayResults(results) {
+
+// ==============================
+// NEW: Personal Inflation Summary
+// ==============================
+    const summary = calculatePersonalInflation(results);
+    
+    const gapText =
+      summary.gap > 0
+        ? `<span style="color:#c53030;font-weight:600;">${summary.gap.toFixed(1)} percentage points higher</span>`
+        : summary.gap < 0
+        ? `<span style="color:#2f855a;font-weight:600;">${Math.abs(summary.gap).toFixed(1)} percentage points lower</span>`
+        : `<span style="font-weight:600;">about the same as</span>`;
+    
+    document.getElementById('personalInflationSummary').innerHTML = `
+      <div style="background:#ebf8ff;border-left:4px solid #4299e1;padding:20px;margin-top:30px;border-radius:8px;">
+        <h3 style="font-size:1.6rem;margin-bottom:10px;">Your Personal Inflation</h3>
+        <p style="font-size:1.05rem;">
+          Your estimated inflation is <strong>${summary.personalInflation.toFixed(1)}%</strong>,
+          which is ${gapText} the national average inflation of
+          <strong>${summary.nationalInflation.toFixed(1)}%</strong>.
+        </p>
+        <p style="font-size:0.9rem;color:#4a5568;margin-top:8px;">
+          Based on ${summary.categoryCount} of ${summary.totalCategories} categories entered.
+        </p>
+      </div>
+    `;
+
     const resultsDiv = document.getElementById('results');
     let html = '<h3 style="margin-top: 30px; border-top: 2px solid #e2e8f0; padding-top: 30px; font-size: 1.8rem;">Your Results</h3>';
     html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">';
