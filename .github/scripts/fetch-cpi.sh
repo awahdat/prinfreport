@@ -67,9 +67,7 @@ extract_category_data() {
     local row=$(echo "$TABLE" | grep -oP "<tr[^>]*>.*?${search_text}.*?</tr>" | head -1)
     
     if [ -z "$row" ]; then
-        echo "  $display_name: Row not found"
-        JSON_DATA="${JSON_DATA}
-        '${display_name}': { monthly: 0.0, annual: 0.0 },"
+        echo "  $display_name: Row not found in Table A"
         return
     fi
     
@@ -85,8 +83,6 @@ extract_category_data() {
     
     if [ $num_values -lt 2 ]; then
         echo "  $display_name: Not enough values found ($num_values)"
-        JSON_DATA="${JSON_DATA}
-        '${display_name}': { monthly: 0.0, annual: 0.0 },"
         return
     fi
     
@@ -107,27 +103,54 @@ extract_category_data() {
     
     echo "  $display_name: monthly=$monthly, annual=$annual"
     
-    JSON_DATA="${JSON_DATA}
-        '${display_name}': { monthly: ${monthly}, annual: ${annual} },"
+    # Store in associative array
+    CATEGORY_DATA["$display_name"]="$monthly|$annual"
 }
 
-# Initialize JSON object
-JSON_DATA="{"
+# Function to extract values from Table 3
+# Column headers: cpipress3.h.2.6 (5th from last = annual), cpipress3.h.2.10 (last = monthly)
+extract_table3_category() {
+    local search_text="$1"
+    local display_name="$2"
+    
+    # Find the row containing this category text
+    local row=$(echo "$TABLE3" | grep -oP "<tr[^>]*>.*?${search_text}.*?</tr>" | head -1)
+    
+    if [ -z "$row" ]; then
+        echo "  $display_name: Row not found in Table 3"
+        return
+    fi
+    
+    # Extract the specific cells by their header IDs
+    # 5th from last: cpipress3.h.2.6 (annual)
+    # Last: cpipress3.h.2.10 (monthly)
+    
+    local annual=$(echo "$row" | grep -oP 'headers="[^"]*cpipress3\.h\.2\.6"[^>]*>\s*<span class="datavalue">([^<]+)</span>' | grep -oP '(?<=<span class="datavalue">)[^<]+(?=</span>)')
+    local monthly=$(echo "$row" | grep -oP 'headers="[^"]*cpipress3\.h\.2\.10"[^>]*>\s*<span class="datavalue">([^<]+)</span>' | grep -oP '(?<=<span class="datavalue">)[^<]+(?=</span>)')
+    
+    echo "  $display_name - annual=$annual, monthly=$monthly"
+    
+    # Handle dash as 0.0
+    if [ "$monthly" = "-" ] || [ -z "$monthly" ]; then
+        monthly="0.0"
+    fi
+    if [ "$annual" = "-" ] || [ -z "$annual" ]; then
+        annual="0.0"
+    fi
+    
+    echo "  $display_name: monthly=$monthly, annual=$annual"
+    
+    # Store in associative array
+    CATEGORY_DATA["$display_name"]="$monthly|$annual"
+}
 
-# Extract data from Table A
+# Initialize associative array for storing data
+declare -A CATEGORY_DATA
+
+# Extract only All items and Apparel from Table A
 echo "Extracting Table A categories..."
 extract_category_data "All items" "All Items"
-extract_category_data "<p class=\"sub1\">Food</p>" "Food"
-extract_category_data "Food at home" "Food at Home"
-extract_category_data "Food away from home" "Food Away from Home"
-extract_category_data "Gasoline \(all types\)" "Gasoline"
-extract_category_data "Energy services" "Energy Services"
-extract_category_data "New vehicles" "New Vehicles"
-extract_category_data "Used cars and trucks" "Used Cars and Trucks"
 extract_category_data "<p class=\"sub3\">Apparel</p>" "Apparel"
-extract_category_data "<p class=\"sub3\">Shelter</p>" "Shelter"
-extract_category_data "Transportation services" "Transportation Services"
-extract_category_data "Medical care services" "Medical Services"
 
 # ============================================
 # FETCH TABLE 3 (Special aggregate indexes)
@@ -158,68 +181,50 @@ else
         else
             echo "Table 3 found! Extracting data..."
             
-            # Function to extract values from Table 3 (5th-from-last = annual, last = monthly)
-            extract_table3_category() {
-                local search_text="$1"
-                local display_name="$2"
-                
-                # Find the row containing this category text
-                local row=$(echo "$TABLE3" | grep -oP "<tr[^>]*>.*?${search_text}.*?</tr>" | head -1)
-                
-                if [ -z "$row" ]; then
-                    echo "  $display_name: Row not found in Table 3"
-                    return
-                fi
-                
-                # Extract all values from <span class="datavalue">
-                local all_values=$(echo "$row" | grep -oP '(?<=<span class="datavalue">)[^<]+(?=</span>)')
-                all_values=$(echo "$all_values" | tr '\n' ' ')
-                
-                echo "  $display_name - All values: [$all_values]"
-                
-                # Split into array
-                local values_array=($all_values)
-                local num_values=${#values_array[@]}
-                
-                if [ $num_values -lt 5 ]; then
-                    echo "  $display_name: Not enough values found ($num_values)"
-                    return
-                fi
-                
-                # Get 5th-from-last (annual) and last (monthly) values
-                local annual_idx=$((num_values - 5))
-                local monthly_idx=$((num_values - 1))
-                
-                local annual="${values_array[$annual_idx]}"
-                local monthly="${values_array[$monthly_idx]}"
-                
-                # Handle dash as 0.0
-                if [ "$monthly" = "-" ]; then
-                    monthly="0.0"
-                fi
-                if [ "$annual" = "-" ]; then
-                    annual="0.0"
-                fi
-                
-                echo "  $display_name: monthly=$monthly, annual=$annual"
-                
-                JSON_DATA="${JSON_DATA}
-        '${display_name}': { monthly: ${monthly}, annual: ${annual} },"
-            }
-            
-            # Extract Table 3 categories
+            # Extract Table 3 categories - using exact text from HTML
             echo "Extracting Table 3 categories..."
-            extract_table3_category "Education" "Education"
-            extract_table3_category "Communication" "Communication"
-            extract_table3_category "Food and beverages" "Food and Beverages"
-            extract_table3_category "Housing" "Housing"
-            extract_table3_category "Medical care" "Medical Care"
-            extract_table3_category "Other goods and services" "Other Goods and Services"
-            extract_table3_category "Recreation" "Recreation"
-            extract_table3_category "Transportation" "Transportation"
+            extract_table3_category "<p class=\"sub0\">Housing</p>" "Housing"
+            extract_table3_category "<p class=\"sub0\">Food and beverages</p>" "Food and Beverages"
+            extract_table3_category "<p class=\"sub0\">Transportation</p>" "Transportation"
+            extract_table3_category "<p class=\"sub0\">Medical care</p>" "Medical Care"
+            extract_table3_category "<p class=\"sub1\">Education" "Education"
+            extract_table3_category "<p class=\"sub1\">Communication" "Communication"
+            extract_table3_category "<p class=\"sub0\">Recreation" "Recreation"
+            extract_table3_category "<p class=\"sub0\">Other goods and services</p>" "Other Goods and Services"
         fi
     fi
 fi
+
+# Build JSON in the specified order
+echo ""
+echo "Building JSON in specified order..."
+
+JSON_DATA="{"
+
+# Order: All Items, Housing, Food and Beverages, Transportation, Medical Care, Education, Communication, Recreation, Apparel, Other Goods and Services
+ORDERED_CATEGORIES=(
+    "All Items"
+    "Housing"
+    "Food and Beverages"
+    "Transportation"
+    "Medical Care"
+    "Education"
+    "Communication"
+    "Recreation"
+    "Apparel"
+    "Other Goods and Services"
+)
+
+for category in "${ORDERED_CATEGORIES[@]}"; do
+    if [ -n "${CATEGORY_DATA[$category]}" ]; then
+        IFS='|' read -r monthly annual <<< "${CATEGORY_DATA[$category]}"
+        JSON_DATA="${JSON_DATA}
+        '${category}': { monthly: ${monthly}, annual: ${annual} },"
+        echo "  Added: $category (monthly=$monthly, annual=$annual)"
+    else
+        echo "  Skipped: $category (no data)"
+    fi
+done
 
 # Remove trailing comma
 JSON_DATA="${JSON_DATA%,}"
