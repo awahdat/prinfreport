@@ -217,9 +217,9 @@ import { Card } from '@eliancodes/brutal-ui';
     useMockData();
   }
 
-        function useMockData() {
+          function useMockData() {
     cpiData = {
-      reportDate: 'January 23, 2026',
+      reportDate: 'January 24, 2026',
       reportMonth: 'December 2025',
       previousMonth: 'November',
       previousYear: 'December 2024',
@@ -235,7 +235,15 @@ import { Card } from '@eliancodes/brutal-ui';
         'Apparel': { monthly: 0.6, annual: 0.6 },
         'Shelter': { monthly: 0.4, annual: 3.2 },
         'Transportation Services': { monthly: 0.5, annual: 1.5 },
-        'Medical Services': { monthly: 0.4, annual: 3.5 }
+        'Medical Services': { monthly: 0.4, annual: 3.5 },
+        'Education': { monthly: -1.0, annual: 0.5 },
+        'Communication': { monthly: -1.9, annual: -1.5 },
+        'Food and Beverages': { monthly: 0.7, annual: 3.0 },
+        'Housing': { monthly: 0.4, annual: 3.6 },
+        'Medical Care': { monthly: 0.4, annual: 3.2 },
+        'Other Goods and Services': { monthly: 0.3, annual: 4.2 },
+        'Recreation': { monthly: 1.2, annual: 3.0 },
+        'Transportation': { monthly: 0.0, annual: 0.4 }
       }
     };
     renderPage();
