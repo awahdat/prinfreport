@@ -1,15 +1,8 @@
 #!/bin/bash
 
-echo "============================================"
-echo "Fetching CPI data from BLS"
-echo "============================================"
-
-FILE="src/pages/index.astro"
-declare -A CATEGORY_DATA
-
-##############################################
-# FETCH TABLE A (All items, Apparel)
-##############################################
+############################################
+# Fetch Table A (Main CPI)
+############################################
 echo "Fetching BLS Table A..."
 
 HTML=$(curl -s -L --compressed \
@@ -21,49 +14,77 @@ HTML=$(curl -s -L --compressed \
   "https://www.bls.gov/news.release/cpi.nr0.htm")
 
 if [ -z "$HTML" ] || echo "$HTML" | grep -q "Access Denied"; then
-  echo "⚠️ BLS blocked Table A. Keeping existing data."
-  exit 0
+    echo "Failed to fetch Table A. Keeping existing data."
+    exit 0
 fi
 
-TABLE_A=$(echo "$HTML" | tr '\n' ' ' | grep -oP '<table[^>]*id="cpi_pressa"[^>]*>.*?</table>')
-[ -z "$TABLE_A" ] && echo "⚠️ Table A not found" && exit 0
+TABLE=$(echo "$HTML" | tr '\n' ' ' | grep -oP '<table[^>]*id="cpi_pressa"[^>]*>.*?</table>')
+[ -z "$TABLE" ] && echo "Table A not found" && exit 0
 
-# Extract report month/year
-MONTH_YEAR=$(echo "$TABLE_A" | grep -oP '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.\s*<br\s*/>\s*20[0-9]{2}' | tail -1 | sed 's/<br[^>]*>/ /')
-REPORT_MONTH=$(echo "$MONTH_YEAR" | cut -d' ' -f1)
-REPORT_YEAR=$(echo "$MONTH_YEAR" | cut -d' ' -f2)
+############################################
+# Report month
+############################################
+MONTH_YEAR=$(echo "$TABLE" | grep -oP '(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\.\s*<br\s*/>\s*20[0-9]{2}' | tail -1 | sed 's/<br[^>]*>/ /')
+REPORT_MONTH=$(echo "$MONTH_YEAR" | awk '{print $1}')
+REPORT_YEAR=$(echo "$MONTH_YEAR" | awk '{print $2}')
 
-declare -A MONTH_MAP=(
-  [Jan]=January [Feb]=February [Mar]=March [Apr]=April
-  [May]=May [Jun]=June [Jul]=July [Aug]=August
-  [Sep]=September [Oct]=October [Nov]=November [Dec]=December
-)
+case "$REPORT_MONTH" in
+  Jan) REPORT_MONTH="January";;
+  Feb) REPORT_MONTH="February";;
+  Mar) REPORT_MONTH="March";;
+  Apr) REPORT_MONTH="April";;
+  May) REPORT_MONTH="May";;
+  Jun) REPORT_MONTH="June";;
+  Jul) REPORT_MONTH="July";;
+  Aug) REPORT_MONTH="August";;
+  Sep) REPORT_MONTH="September";;
+  Oct) REPORT_MONTH="October";;
+  Nov) REPORT_MONTH="November";;
+  Dec) REPORT_MONTH="December";;
+esac
 
-FULL_MONTH="${MONTH_MAP[$REPORT_MONTH]} $REPORT_YEAR"
+FULL_MONTH="$REPORT_MONTH $REPORT_YEAR"
+echo "Report month: $FULL_MONTH"
 
-extract_table_a() {
-  local pattern="$1"
-  local label="$2"
+############################################
+# JSON init
+############################################
+JSON_DATA="{"
 
-  row=$(echo "$TABLE_A" | grep -oP "<tr[^>]*>.*?$pattern.*?</tr>" | head -1)
-  values=($(echo "$row" | grep -oP '(?<=<span class="datavalue">)[^<]+'))
+############################################
+# Table A extractor
+############################################
+extract_category_data() {
+  local search="$1"
+  local name="$2"
+  local row=$(echo "$TABLE" | grep -oP "<tr[^>]*>.*?$search.*?</tr>" | head -1)
 
-  monthly="${values[-2]}"
-  annual="${values[-1]}"
+  if [ -z "$row" ]; then
+    JSON_DATA="${JSON_DATA}
+      '${name}': { monthly: 0.0, annual: 0.0 },"
+    return
+  fi
 
-  [[ "$monthly" == "-" ]] && monthly="0.0"
-  [[ "$annual" == "-" ]] && annual="0.0"
+  local values=($(echo "$row" | grep -oP '(?<=<span class="datavalue">)[^<]+'))
+  local monthly="${values[-2]:-0.0}"
+  local annual="${values[-1]:-0.0}"
 
-  CATEGORY_DATA["$label"]="$monthly|$annual"
-  echo "✓ $label (A): $monthly / $annual"
+  [ "$monthly" = "-" ] && monthly="0.0"
+  [ "$annual" = "-" ] && annual="0.0"
+
+  JSON_DATA="${JSON_DATA}
+      '${name}': { monthly: ${monthly}, annual: ${annual} },"
 }
 
-extract_table_a "All items" "All Items"
-extract_table_a "<p class=\"sub3\">Apparel</p>" "Apparel"
+############################################
+# Table A categories (restricted)
+############################################
+extract_category_data "All items" "All Items"
+extract_category_data "<p class=\"sub3\">Apparel</p>" "Apparel"
 
-##############################################
-# FETCH TABLE 3 (Major groups)
-##############################################
+############################################
+# Fetch Table 3 (Major groups)
+############################################
 echo "Fetching BLS Table 3..."
 
 HTML3=$(curl -s -L --compressed \
@@ -74,78 +95,85 @@ HTML3=$(curl -s -L --compressed \
   -H "Upgrade-Insecure-Requests: 1" \
   "https://www.bls.gov/news.release/cpi.t03.htm")
 
-if [ -z "$HTML3" ] || echo "$HTML3" | grep -q "Access Denied"; then
-  echo "⚠️ BLS blocked Table 3. Continuing with Table A only."
-else
-  TABLE_3=$(echo "$HTML3" | tr '\n' ' ' | grep -oP '<table[^>]*id="cpipress3"[^>]*>.*?</table>')
-
-  extract_table_3() {
-    local pattern="$1"
-    local label="$2"
-
-    row=$(echo "$TABLE_3" | grep -oP "<tr[^>]*>.*?$pattern.*?</tr>" | head -1)
-
-    annual=$(echo "$row" | grep -oP 'headers="[^"]*cpipress3\.h\.2\.6[^"]*"[^>]*>[^<]*<span class="datavalue">([^<]+)' | grep -oP '[0-9.-]+')
-    monthly=$(echo "$row" | grep -oP 'headers="[^"]*cpipress3\.h\.2\.10[^"]*"[^>]*>[^<]*<span class="datavalue">([^<]+)' | grep -oP '[0-9.-]+')
-
-    [[ -z "$monthly" ]] && monthly="0.0"
-    [[ -z "$annual" ]] && annual="0.0"
-
-    CATEGORY_DATA["$label"]="$monthly|$annual"
-    echo "✓ $label (3): $monthly / $annual"
-  }
-
-  extract_table_3 "<p class=\"sub0\">Housing</p>" "Housing"
-  extract_table_3 "<p class=\"sub0\">Food and beverages</p>" "Food and Beverages"
-  extract_table_3 "<p class=\"sub0\">Transportation</p>" "Transportation"
-  extract_table_3 "<p class=\"sub0\">Medical care</p>" "Medical Care"
-  extract_table_3 "<p class=\"sub1\">Education</p>" "Education"
-  extract_table_3 "<p class=\"sub1\">Communication</p>" "Communication"
-  extract_table_3 "<p class=\"sub0\">Recreation</p>" "Recreation"
-  extract_table_3 "<p class=\"sub0\">Other goods and services</p>" "Other Goods and Services"
+if ! echo "$HTML3" | grep -q "Access Denied"; then
+  TABLE3=$(echo "$HTML3" | tr '\n' ' ' | grep -oP '<table[^>]*id="cpipress3"[^>]*>.*?</table>')
 fi
 
-##############################################
-# BUILD JSON (strict order)
-##############################################
-ORDER=(
-  "All Items"
-  "Housing"
-  "Food and Beverages"
-  "Transportation"
-  "Medical Care"
-  "Education"
-  "Communication"
-  "Recreation"
-  "Apparel"
-  "Other Goods and Services"
-)
+############################################
+# Table 3 extractor (ID-based, correct)
+############################################
+extract_table3() {
+  local pattern="$1"
+  local name="$2"
 
-JSON="{"
-for c in "${ORDER[@]}"; do
-  if [ -n "${CATEGORY_DATA[$c]}" ]; then
-    IFS='|' read m a <<< "${CATEGORY_DATA[$c]}"
-    JSON+="
-    '$c': { monthly: $m, annual: $a },"
-  fi
-done
-JSON="${JSON%,}
-}"
+  local row=$(echo "$TABLE3" | grep -oP "<tr[^>]*>.*?$pattern.*?</tr>" | head -1)
 
-##############################################
-# UPDATE index.astro
-##############################################
+  local annual=$(echo "$row" | grep -oP 'headers="[^"]*cpipress3\.h\.2\.6[^"]*"[^>]*>\s*<span class="datavalue">[^<]+' | grep -oP '[0-9.-]+')
+  local monthly=$(echo "$row" | grep -oP 'headers="[^"]*cpipress3\.h\.2\.10[^"]*"[^>]*>\s*<span class="datavalue">[^<]+' | grep -oP '[0-9.-]+')
+
+  annual=${annual:-0.0}
+  monthly=${monthly:-0.0}
+
+  JSON_DATA="${JSON_DATA}
+      '${name}': { monthly: ${monthly}, annual: ${annual} },"
+}
+
+############################################
+# Table 3 categories (exact + correct)
+############################################
+extract_table3 "<p class=\"sub0\">Housing</p>" "Housing"
+extract_table3 "<p class=\"sub0\">Food and beverages</p>" "Food and Beverages"
+extract_table3 "<p class=\"sub0\">Transportation</p>" "Transportation"
+extract_table3 "<p class=\"sub0\">Medical care</p>" "Medical Care"
+extract_table3 "<p class=\"sub1\">Education</p>" "Education"
+extract_table3 "<p class=\"sub1\">Communication</p>" "Communication"
+extract_table3 "<p class=\"sub0\">Recreation</p>" "Recreation"
+extract_table3 "<p class=\"sub0\">Other goods and services</p>" "Other Goods and Services"
+
+############################################
+# Finalize JSON
+############################################
+JSON_DATA="${JSON_DATA%,}
+      }"
+
+############################################
+# Dates
+############################################
+get_previous_month() {
+  case "$1" in
+    *January*) echo "December";;
+    *February*) echo "January";;
+    *March*) echo "February";;
+    *April*) echo "March";;
+    *May*) echo "April";;
+    *June*) echo "May";;
+    *July*) echo "June";;
+    *August*) echo "July";;
+    *September*) echo "August";;
+    *October*) echo "September";;
+    *November*) echo "October";;
+    *December*) echo "November";;
+  esac
+}
+
+PREV_MONTH=$(get_previous_month "$FULL_MONTH")
+PREV_YEAR="${FULL_MONTH/20*/$((REPORT_YEAR - 1))}"
 REPORT_DATE=$(date +'%B %d, %Y')
 
-NEW_DATA="  function useMockData() {
+############################################
+# Inject into index.astro
+############################################
+NEW_MOCK_DATA="  function useMockData() {
     cpiData = {
       reportDate: '$REPORT_DATE',
       reportMonth: '$FULL_MONTH',
-      categories: $JSON
+      previousMonth: '$PREV_MONTH',
+      previousYear: '$PREV_YEAR',
+      categories: ${JSON_DATA}
     };
     renderPage();
   }"
 
-perl -i -0pe "s/function useMockData\(\) \{.*?\n  \}/$NEW_DATA/s" "$FILE"
+perl -i -0pe 's/function useMockData\(\) \{.*?\n  \}/'"$(echo "$NEW_MOCK_DATA" | sed 's/[&/\]/\\&/g')"'/s' src/pages/index.astro
 
-echo "✅ CPI data updated successfully"
+echo "✅ CPI data updated successfully!"
