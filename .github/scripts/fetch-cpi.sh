@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 echo "============================================"
 echo "Fetching CPI data from BLS"
