@@ -157,12 +157,13 @@ JSON_DATA="${JSON_DATA%,}
 
 REPORT_DATE=$(date +'%B %d, %Y')
 PREV_YEAR="${FULL_MONTH/$REPORT_YEAR/$((REPORT_YEAR-1))}"
+PREV_MONTH=$(get_previous_month "$FULL_MONTH")
 
 NEW_MOCK_DATA="  function useMockData() {
     cpiData = {
       reportDate: '$REPORT_DATE',
       reportMonth: '$FULL_MONTH',
-      previousMonth: '',
+      previousMonth: '$PREV_MONTH',
       previousYear: '$PREV_YEAR',
       categories: $JSON_DATA
     };
