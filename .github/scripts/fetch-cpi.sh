@@ -77,10 +77,10 @@ else
     TABLE3=$(echo "$HTML3" | tr '\n' ' ' | grep -oP '<table[^>]*id="cpipress3"[^>]*>.*?</table>')
 
 extract_table3() {
-    local row_id="$1"   # e.g. cpipress3.r.13.1
+    local row_id="$1"
     local name="$2"
 
-    # Find the <tr> that CONTAINS the <th id="row_id">
+    # Get full row containing this category
     local row
     row=$(echo "$TABLE3" | tr '\n' ' ' | grep -oP \
         "<tr[^>]*>\\s*<th[^>]*id=\"$row_id\".*?</tr>")
@@ -91,17 +91,19 @@ extract_table3() {
         return
     fi
 
-    # Annual inflation (12-month change)
+    # Annual (12-month change)
     local annual
     annual=$(echo "$row" | grep -oP \
-        "(?<=headers=\"$row_id cpipress3.h.1.6 cpipress3.h.2.6\">\\s*<span class=\"datavalue\">)[^<]+")
+        "<td[^>]*headers=\"$row_id cpipress3.h.1.6 cpipress3.h.2.6\"[^>]*>.*?</td>" \
+        | sed -n 's/.*<span class="datavalue">\([^<]*\)<\/span>.*/\1/p')
 
-    # Monthly inflation (1-month change)
+    # Monthly (1-month change)
     local monthly
     monthly=$(echo "$row" | grep -oP \
-        "(?<=headers=\"$row_id cpipress3.h.1.8 cpipress3.h.2.10\">\\s*<span class=\"datavalue\">)[^<]+")
+        "<td[^>]*headers=\"$row_id cpipress3.h.1.8 cpipress3.h.2.10\"[^>]*>.*?</td>" \
+        | sed -n 's/.*<span class="datavalue">\([^<]*\)<\/span>.*/\1/p')
 
-    # Normalize missing values
+    # Normalize dashes / empty
     [[ -z "$annual"  || "$annual"  == "-" ]] && annual="0.0"
     [[ -z "$monthly" || "$monthly" == "-" ]] && monthly="0.0"
 
