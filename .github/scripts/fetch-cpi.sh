@@ -77,23 +77,47 @@ else
     TABLE3=$(echo "$HTML3" | tr '\n' ' ' | grep -oP '<table[^>]*id="cpipress3"[^>]*>.*?</table>')
 
     extract_table3() {
-  	local row_id="$1"
-  	local name="$2"
-  	row=$(echo "$TABLE3" | grep -oP "<tr[^>]*>.*?$search.*?</tr>" | head -1)
-  	vals=($(echo "$row" | grep -oP '(?<=<span class="datavalue">)[^<]+'))
-  	monthly="${vals[-1]:-0.0}"
-  	annual="${vals[-5]:-0.0}"
-  	CATEGORY_DATA["$name"]="$monthly|$annual"
-    }
+      local row_id="$1"   # e.g. cpipress3.r.13.1
+      local name="$2"
+  
+      # Get the full <tr> for this row id
+      local row
+      row=$(echo "$TABLE3" | tr '\n' ' ' | grep -oP "<tr[^>]*id=\"$row_id\".*?</tr>")
+  
+      if [ -z "$row" ]; then
+          echo "  $name: row not found"
+          CATEGORY_DATA["$name"]="0.0|0.0"
+          return
+      fi
+  
+      # Annual inflation (12-month change)
+      local annual
+      annual=$(echo "$row" | grep -oP \
+          "(?<=headers=\"$row_id cpipress3.h.1.6 cpipress3.h.2.6\">\\s*<span class=\"datavalue\">)[^<]+")
+  
+      # Monthly inflation (1-month change)
+      local monthly
+      monthly=$(echo "$row" | grep -oP \
+          "(?<=headers=\"$row_id cpipress3.h.1.8 cpipress3.h.2.10\">\\s*<span class=\"datavalue\">)[^<]+")
+  
+      # Normalize missing / dash values
+      [[ -z "$annual"  || "$annual"  == "-" ]] && annual="0.0"
+      [[ -z "$monthly" || "$monthly" == "-" ]] && monthly="0.0"
+  
+      echo "  $name: monthly=$monthly annual=$annual"
+      CATEGORY_DATA["$name"]="$monthly|$annual"
+  }
 
-    extract_table3 "<p class=\"sub0\">Housing</p>" "Housing"
-    extract_table3 "<p class=\"sub0\">Food and Beverages</p>" "Food and Beverages"
-    extract_table3 "<p class=\"sub0\">Transportation</p>" "Transportation"
-    extract_table3 "<p class=\"sub0\">Medical Care</p>" "Medical Care"
-    extract_table3 "<p class=\"sub1\">Education</p>" "Education"
-    extract_table3 "<p class=\"sub1\">Communication</p>" "Communication"
-    extract_table3 "<p class=\"sub0\">Recreation</p>" "Recreation"
-    extract_table3 "<p class=\"sub0\">Other Goods and Services</p>" "Other Goods and Services"
+
+    extract_table3 "cpipress3.r.12"   "Housing"
+    extract_table3 "cpipress3.r.13.1" "Education"
+    extract_table3 "cpipress3.r.13.2" "Communication"
+    extract_table3 "cpipress3.r.14"   "Recreation"
+    extract_table3 "cpipress3.r.15"   "Food and Beverages"
+    extract_table3 "cpipress3.r.19"   "Medical Care"
+    extract_table3 "cpipress3.r.20"   "Transportation"
+    extract_table3 "cpipress3.r.23"   "Other Goods and Services"
+
 fi
 
 ############################################
