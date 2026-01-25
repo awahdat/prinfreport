@@ -76,37 +76,38 @@ if [ -z "$HTML3" ] || echo "$HTML3" | grep -q "Access Denied"; then
 else
     TABLE3=$(echo "$HTML3" | tr '\n' ' ' | grep -oP '<table[^>]*id="cpipress3"[^>]*>.*?</table>')
 
-    extract_table3() {
-      local row_id="$1"   # e.g. cpipress3.r.13.1
-      local name="$2"
-  
-      # Get the full <tr> for this row id
-      local row
-      row=$(echo "$TABLE3" | tr '\n' ' ' | grep -oP "<tr[^>]*id=\"$row_id\".*?</tr>")
-  
-      if [ -z "$row" ]; then
-          echo "  $name: row not found"
-          CATEGORY_DATA["$name"]="0.0|0.0"
-          return
-      fi
-  
-      # Annual inflation (12-month change)
-      local annual
-      annual=$(echo "$row" | grep -oP \
-          "(?<=headers=\"$row_id cpipress3.h.1.6 cpipress3.h.2.6\">\\s*<span class=\"datavalue\">)[^<]+")
-  
-      # Monthly inflation (1-month change)
-      local monthly
-      monthly=$(echo "$row" | grep -oP \
-          "(?<=headers=\"$row_id cpipress3.h.1.8 cpipress3.h.2.10\">\\s*<span class=\"datavalue\">)[^<]+")
-  
-      # Normalize missing / dash values
-      [[ -z "$annual"  || "$annual"  == "-" ]] && annual="0.0"
-      [[ -z "$monthly" || "$monthly" == "-" ]] && monthly="0.0"
-  
-      echo "  $name: monthly=$monthly annual=$annual"
-      CATEGORY_DATA["$name"]="$monthly|$annual"
-  }
+extract_table3() {
+    local row_id="$1"   # e.g. cpipress3.r.13.1
+    local name="$2"
+
+    # Find the <tr> that CONTAINS the <th id="row_id">
+    local row
+    row=$(echo "$TABLE3" | tr '\n' ' ' | grep -oP \
+        "<tr[^>]*>\\s*<th[^>]*id=\"$row_id\".*?</tr>")
+
+    if [ -z "$row" ]; then
+        echo "  $name: row not found"
+        CATEGORY_DATA["$name"]="0.0|0.0"
+        return
+    fi
+
+    # Annual inflation (12-month change)
+    local annual
+    annual=$(echo "$row" | grep -oP \
+        "(?<=headers=\"$row_id cpipress3.h.1.6 cpipress3.h.2.6\">\\s*<span class=\"datavalue\">)[^<]+")
+
+    # Monthly inflation (1-month change)
+    local monthly
+    monthly=$(echo "$row" | grep -oP \
+        "(?<=headers=\"$row_id cpipress3.h.1.8 cpipress3.h.2.10\">\\s*<span class=\"datavalue\">)[^<]+")
+
+    # Normalize missing values
+    [[ -z "$annual"  || "$annual"  == "-" ]] && annual="0.0"
+    [[ -z "$monthly" || "$monthly" == "-" ]] && monthly="0.0"
+
+    echo "  $name: monthly=$monthly annual=$annual"
+    CATEGORY_DATA["$name"]="$monthly|$annual"
+}
 
 
     extract_table3 "cpipress3.r.12"   "Housing"
