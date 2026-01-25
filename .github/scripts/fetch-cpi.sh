@@ -151,6 +151,26 @@ done
 JSON_DATA="${JSON_DATA%,}
 }"
 
+# Get previous month
+get_previous_month() {
+    local current="$1"
+    case "$current" in
+        *January*) echo "December" ;;
+        *February*) echo "January" ;;
+        *March*) echo "February" ;;
+        *April*) echo "March" ;;
+        *May*) echo "April" ;;
+        *June*) echo "May" ;;
+        *July*) echo "June" ;;
+        *August*) echo "July" ;;
+        *September*) echo "August" ;;
+        *October*) echo "September" ;;
+        *November*) echo "October" ;;
+        *December*) echo "November" ;;
+        *) echo "Previous Month" ;;
+    esac
+}
+
 ############################################
 # UPDATE index.astro (unchanged)
 ############################################
