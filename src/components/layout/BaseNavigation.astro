@@ -27,14 +27,27 @@ const { pageTitle } = Astro.props;
 
 <header class='border-b-4 border-black flex justify-between p-6 items-center'>
   {pageTitle && <h1 class='hidden'>{pageTitle}</h1>}
-  <a href='/' title='Back to Home'>
-  <img 
-    src='/logo.svg' 
-    alt='Price Inflation Report' 
-    class='h-20 md:h-32'
-    width='128'
-    height='128'
-  />
+  <a href="/" title="Back to Home" class="flex items-start gap-3">
+  <!-- Text block -->
+  <div class="leading-tight">
+    <!-- Price line with horizontal dots -->
+    <div class="flex items-center gap-2">
+      <p class="righteous text-black md:text-5xl text-3xl m-0">
+        Price <div class="flex gap-1">
+        <span class="w-2 h-2 bg-black rounded-full"></span>
+        <span class="w-2 h-2 bg-black rounded-full"></span>
+        <span class="w-2 h-2 bg-black rounded-full"></span>
+      </div>
+      </p>
+    </div>
+
+    <p class="righteous text-black md:text-5xl text-3xl m-0">
+      Inflation
+    </p>
+    <p class="righteous text-gray-500 md:text-5xl text-3xl m-0">
+      Report
+    </p>
+  </div>
 </a>
   <nav class='hidden md:inline-block'>
     <h2 class='hidden'>Navigation</h2>
