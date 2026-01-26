@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: 
-Host: https://brutal.elian.codes/
-Sitemap: https://brutal.elian.codes/sitemap-index.xml
+Host: https://prinfreport.pages.dev/
+Sitemap: https://prinfreport.pages.dev/sitemap-index.xml
