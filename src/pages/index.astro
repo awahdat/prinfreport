@@ -95,48 +95,124 @@ import { Card } from '@eliancodes/brutal-ui';
           </div>
       </Card>
 
-      <!-- Share Data -->
+      <!-- Share Data Survey -->
       <Card>
-          <h2 class='text-3xl md:text-5xl mb-4'>Help Build America's Spending Report</h2>
-          <p class='text-lg mb-6'>
-            If you're willing to share your spending data, we'll use it to create a monthly report showing average spending across the United States. The aggregated results will be available through this website the following month, helping everyone understand real spending patterns in our economy.
+          <h2 class='text-3xl md:text-5xl mb-4'>
+            Help Build America’s Personal Inflation Story
+          </h2>
+
+          <p class='text-lg mb-4'>
+            Price changes don’t affect everyone the same way. By answering a few quick questions,
+            we will tell you each month how price inflation is showing up in American households.
           </p>
+
+            <div style='background:#f0fff4;border-left:4px solid #48bb78;padding:15px;margin-bottom:20px;'>
+              <p class='text-base'>
+                <strong>🔒 Trust & Privacy:</strong>
+                Your responses will be anonymous and combined with responses from other Americans across the country to show national patterns.
+              </p>
+            </div>
           
-          <div style='background: #fffaf0; border-left: 4px solid #ed8936; padding: 15px; margin-bottom: 20px;'>
-            <p class='text-base'>
-              <strong>How we use your data:</strong> Your spending data will be combined with data from other Americans to calculate average spending by category. Individual submissions remain anonymous and are only used for aggregate statistics.
-            </p>
-          </div>
-          
-          <div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px;'>
+          <!-- Survey Questions -->
+          <div style='display: flex; flex-direction: column; gap: 24px; margin-bottom: 20px;'>
+            
+            <!-- Question 1: ZIP Code -->
             <div>
-              <label style='display: block; margin-bottom: 5px; font-weight: 500;'>ZIP Code *</label>
+              <label style='display: block; margin-bottom: 8px; font-weight: 600; font-size: 1rem;'>
+                1. ZIP Code *
+              </label>
               <input 
                 type="text" 
-                id="zipcode" 
+                id="survey_zipcode" 
                 placeholder="12345" 
                 maxlength="5"
-                style='width: 100%; padding: 10px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1rem;'
+                required
+                style='width: 100%; max-width: 300px; padding: 12px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1rem;'
               />
             </div>
+
+            <!-- Question 2: Spending Change -->
             <div>
-              <label style='display: block; margin-bottom: 5px; font-weight: 500;'>State *</label>
+              <label style='display: block; margin-bottom: 8px; font-weight: 600; font-size: 1rem;'>
+                2. Compared to last month, how did your total spending change due to price changes? *
+              </label>
               <select 
-                id="state"
-                style='width: 100%; padding: 10px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1rem;'
+                id="survey_spending_change"
+                required
+                style='width: 100%; max-width: 400px; padding: 12px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1rem;'
               >
-                <option value="">Select state</option>
+                <option value="">Select an option</option>
+                <option value="Went Up">Went Up</option>
+                <option value="Stayed the Same">Stayed the Same</option>
+                <option value="Went Down">Went Down</option>
+                <option value="Don't Know">Don't Know</option>
               </select>
             </div>
+
+            <!-- Question 3: Category with Most Increase -->
+            <div>
+              <label style='display: block; margin-bottom: 8px; font-weight: 600; font-size: 1rem;'>
+                3. As a result of price changes, which category's spending increased the most for you this month? *
+              </label>
+              <select 
+                id="survey_category_increase"
+                required
+                style='width: 100%; max-width: 400px; padding: 12px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1rem;'
+              >
+                <option value="">Select a category</option>
+                <option value="Housing / Rent">Housing / Rent</option>
+                <option value="Food & Groceries">Food & Groceries</option>
+                <option value="Transportation">Transportation</option>
+                <option value="Medical Care">Medical Care</option>
+                <option value="Utilities">Utilities</option>
+                <option value="Education & Childcare">Education & Childcare</option>
+                <option value="Clothing & Shoes">Clothing & Shoes</option>
+                <option value="Other Goods & Services">Other Goods & Services</option>
+              </select>
+            </div>
+
+            <!-- Question 4: Can Cover Expenses -->
+            <div>
+              <label style='display: block; margin-bottom: 8px; font-weight: 600; font-size: 1rem;'>
+                4. Given your recent monthly income and price changes, can you cover your monthly expenses? *
+              </label>
+              <select 
+                id="survey_cover_expenses"
+                required
+                style='width: 100%; max-width: 400px; padding: 12px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1rem;'
+              >
+                <option value="">Select an option</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="Don't Know">Don't Know</option>
+              </select>
+            </div>
+
+            <!-- Question 5: Future Expectations -->
+            <div>
+              <label style='display: block; margin-bottom: 8px; font-weight: 600; font-size: 1rem;'>
+                5. Over the next 3 months, do you expect prices in general will go up, go down, or stay where they are now? *
+              </label>
+              <select 
+                id="survey_price_expectations"
+                required
+                style='width: 100%; max-width: 400px; padding: 12px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1rem;'
+              >
+                <option value="">Select an option</option>
+                <option value="Go Up">Go Up</option>
+                <option value="Stay the Same">Stay the Same</option>
+                <option value="Go Down">Go Down</option>
+                <option value="Don't Know">Don't Know</option>
+              </select>
+            </div>
+
           </div>
           
-          <div id="shareExpenseForm" style='gap: 15px; margin-bottom: 20px;'></div>
-          
           <button 
-            onclick="submitShareData()"
+            onclick="submitSurvey()"
             style='background: #ed8936; color: white; padding: 15px 30px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; width: 100%;'
           >
-            Share My Data for America's Spending Report
+            Submit Survey
           </button>
       </Card>
 
@@ -170,13 +246,10 @@ import { Card } from '@eliancodes/brutal-ui';
     'Other Goods and Services': 'Other Goods and Services'
   };
 
-  const states = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'];
-
   let cpiData = null;
 
   // Initialize function
   function initializePage() {
-    populateStates();
     loadMockData();
   }
 
@@ -201,38 +274,28 @@ import { Card } from '@eliancodes/brutal-ui';
     }, 250);
   });
 
-  function populateStates() {
-    const stateSelect = document.getElementById('state');
-    states.forEach(state => {
-      const option = document.createElement('option');
-      option.value = state;
-      option.textContent = state;
-      stateSelect.appendChild(option);
-    });
-  }
-
   function loadMockData() {
     useMockData();
   }
 
-                                function useMockData() {
+  function useMockData() {
     cpiData = {
       reportDate: 'January 25, 2026',
       reportMonth: 'December 2025',
       previousMonth: 'November',
       previousYear: 'December 2024',
       categories: {
-    'All Items': { monthly: 0.3, annual: 2.7 },
-    'Housing': { monthly: 0.4, annual: 3.6 },
-    'Food and Beverages': { monthly: 0.7, annual: 3.0 },
-    'Transportation': { monthly: 0.0, annual: 0.4 },
-    'Medical Care': { monthly: 0.4, annual: 3.2 },
-    'Education': { monthly: 0.2, annual: 2.9 },
-    'Communication': { monthly: -1.9, annual: -1.5 },
-    'Recreation': { monthly: 1.2, annual: 3.0 },
-    'Apparel': { monthly: 0.6, annual: 0.6 },
-    'Other Goods and Services': { monthly: 0.3, annual: 4.2 }
-}
+        'All Items': { monthly: 0.3, annual: 2.7 },
+        'Housing': { monthly: 0.4, annual: 3.6 },
+        'Food and Beverages': { monthly: 0.7, annual: 3.0 },
+        'Transportation': { monthly: 0.0, annual: 0.4 },
+        'Medical Care': { monthly: 0.4, annual: 3.2 },
+        'Education': { monthly: 0.2, annual: 2.9 },
+        'Communication': { monthly: -1.9, annual: -1.5 },
+        'Recreation': { monthly: 1.2, annual: 3.0 },
+        'Apparel': { monthly: 0.6, annual: 0.6 },
+        'Other Goods and Services': { monthly: 0.3, annual: 4.2 }
+      }
     };
     renderPage();
   }
@@ -254,15 +317,12 @@ import { Card } from '@eliancodes/brutal-ui';
 
   function renderExpenseForms() {
     const expenseForm = document.getElementById('expenseForm');
-    const shareForm = document.getElementById('shareExpenseForm');
     
     expenseForm.innerHTML = '';
-    shareForm.innerHTML = '';
     
     // Use categories from the fetched data
     const categories = Object.keys(cpiData.categories).filter(category => category !== 'All Items');
 
-    
     categories.forEach(category => {
       // Personal calculator form
       const div1 = document.createElement('div');
@@ -284,30 +344,8 @@ import { Card } from '@eliancodes/brutal-ui';
         </div>
       `;
       expenseForm.appendChild(div1);
-      
-      // Share data form
-      const div2 = document.createElement('div');
-      div2.className = 'expense-item';
-      div2.dataset.category = category;
-      div2.style.cssText = 'gap: 5px;';
-      div2.innerHTML = `
-        <label style='font-weight: 500; font-size: 0.95rem;'>${category}</label>
-        <div style='position: relative; max-width: 300px;'>
-          <span style='position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #718096; font-size: 1.1rem;'>$</span>
-          <input 
-            type="number" 
-            id="share_${category.replace(/\s+/g, '_')}" 
-            min="0" 
-            step="0.01" 
-            placeholder="0.00"
-            style='width: 100%; padding: 12px 12px 12px 28px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1.1rem;'
-          />
-        </div>
-      `;
-      shareForm.appendChild(div2);
     });
   }
-
 
   function renderChart() {
     console.log('renderChart called');
@@ -337,7 +375,7 @@ import { Card } from '@eliancodes/brutal-ui';
 
     console.log('Chart data prepared:', chartData);
 
-// Determine width based on screen size
+    // Determine width based on screen size
     const isMobile = window.innerWidth < 768;
     const chartWidth = isMobile ? 600 : 900;
     const chartHeight = isMobile ? 900 : 650;
@@ -515,9 +553,6 @@ import { Card } from '@eliancodes/brutal-ui';
     displayResults(results);
   }
 
-  // ==============================
-  // NEW: Calculate Personal Inflation
-  // ==============================
   function calculatePersonalInflation(results) {
     let totalSpending = 0;
     let weightedInflation = 0;
@@ -545,12 +580,7 @@ import { Card } from '@eliancodes/brutal-ui';
     };
   }
 
-
   function displayResults(results) {
-
-// ==============================
-// NEW: Personal Inflation Summary
-// ==============================
     const summary = calculatePersonalInflation(results);
     
     const gapText =
@@ -620,7 +650,7 @@ import { Card } from '@eliancodes/brutal-ui';
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          access_key: 'YOUR_WEB3FORMS_ACCESS_KEY', // Replace with your key
+          access_key: 'YOUR_WEB3FORMS_ACCESS_KEY',
           subject: 'New Email Signup - Price Inflation Report',
           from_name: 'Price Inflation Report',
           email: email,
@@ -642,52 +672,53 @@ import { Card } from '@eliancodes/brutal-ui';
     }
   }
 
-  async function submitShareData() {
-    const zipcode = document.getElementById('zipcode').value;
-    const state = document.getElementById('state').value;
+  async function submitSurvey() {
+    // Get form values
+    const zipcode = document.getElementById('survey_zipcode').value;
+    const spendingChange = document.getElementById('survey_spending_change').value;
+    const categoryIncrease = document.getElementById('survey_category_increase').value;
+    const coverExpenses = document.getElementById('survey_cover_expenses').value;
+    const priceExpectations = document.getElementById('survey_price_expectations').value;
 
-    if (!zipcode || !state) {
-      alert('Please enter your ZIP code and state');
+    // Validate required fields
+    if (!zipcode) {
+      alert('Please enter your ZIP code');
       return;
     }
 
-    const expenses = {};
-    let hasExpenses = false;
-
-    Object.keys(categories).forEach(category => {
-      const id = 'share_' + category.replace(/\s+/g, '_');
-      const value = parseFloat(document.getElementById(id).value);
-      if (value && value > 0) {
-        expenses[category] = value;
-        hasExpenses = true;
-      }
-    });
-
-    if (!hasExpenses) {
-      alert('Please enter at least one expense amount');
+    if (!spendingChange || !categoryIncrease || !coverExpenses || !priceExpectations) {
+      alert('Please answer all questions');
       return;
     }
-
-    const expenseList = Object.entries(expenses)
-      .map(([cat, amt]) => `${cat}: $${amt.toFixed(2)}`)
-      .join(', ');
 
     try {
       const response = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          access_key: 'YOUR_WEB3FORMS_ACCESS_KEY', // Replace with your key
-          subject: `Spending Data Submission - ${state} ${zipcode}`,
+          access_key: 'YOUR_WEB3FORMS_ACCESS_KEY',
+          subject: `Inflation Survey Response - ZIP ${zipcode}`,
           from_name: 'Price Inflation Report',
           message: `
 Report Month: ${cpiData.reportMonth}
-State: ${state}
 ZIP Code: ${zipcode}
 Timestamp: ${new Date().toISOString()}
 
-Spending Data:
-${expenseList}
+Survey Responses:
+
+Q1. ZIP Code: ${zipcode}
+
+Q2. Compared to last month, how did your total spending change due to price changes?
+Answer: ${spendingChange}
+
+Q3. As a result of price changes, which category's spending increased the most for you this month?
+Answer: ${categoryIncrease}
+
+Q4. Given your recent monthly income and price changes, can you cover your monthly expenses?
+Answer: ${coverExpenses}
+
+Q5. Over the next 3 months, do you expect prices in general will go up, go down, or stay where they are now?
+Answer: ${priceExpectations}
           `
         })
       });
@@ -695,13 +726,13 @@ ${expenseList}
       const result = await response.json();
       
       if (result.success) {
-        alert('Thank you for sharing your data! Your contribution helps create a comprehensive view of American spending patterns.');
-        document.getElementById('zipcode').value = '';
-        document.getElementById('state').value = '';
-        Object.keys(categories).forEach(category => {
-          const id = 'share_' + category.replace(/\s+/g, '_');
-          document.getElementById(id).value = '';
-        });
+        alert('Thank you for sharing your perspective! Your responses help us understand how inflation affects real Americans.');
+        // Clear form
+        document.getElementById('survey_zipcode').value = '';
+        document.getElementById('survey_spending_change').value = '';
+	document.getElementById('survey_category_increase').value = '';
+        document.getElementById('survey_cover_expenses').value = '';
+        document.getElementById('survey_price_expectations').value = '';
       } else {
         alert('There was an error. Please try again.');
       }
@@ -714,32 +745,29 @@ ${expenseList}
 
 <style>
   /* Responsive adjustments */
-    #inflationChart {
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden;
+  #inflationChart {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Mobile default (stacked) */
+  #expenseForm {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Desktop layout */
+  @media (min-width: 1024px) {
+    #expenseForm {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
     }
 
-/* Mobile default (stacked) */
-#expenseForm,
-#shareExpenseForm {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* Desktop layout */
-@media (min-width: 1024px) {
-  #expenseForm,
-  #shareExpenseForm {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    .expense-item[data-category="All Items"] {
+      grid-column: 1 / -1;
+    }
   }
-
-  .expense-item[data-category="All Items"] {
-    grid-column: 1 / -1;
-  }
-}
-
 </style>
