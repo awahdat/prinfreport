@@ -445,8 +445,8 @@ import { Card } from '@eliancodes/brutal-ui';
 	      "type": "group",
 	      "encode": {
 	        "update": {
-	          "x": {"value": 0},
-	          "y": {"value": 0}
+	          "x": { "value": isMobile ? -90 : -140 },
+	          "y": {"value": 10}
 	        }
 	      },
 	      "marks": [
@@ -456,6 +456,7 @@ import { Card } from '@eliancodes/brutal-ui';
 	            "update": {
 	              "x": {"value": 0},
 	              "y": {"value": 0},
+				  "align": { "value": "left" },	
 	              "text": {"value": "Price"},
 	              "fontSize": {"value": isMobile ? 16 : 20},
 	              "fontWeight": {"value": "bold"},
@@ -470,6 +471,7 @@ import { Card } from '@eliancodes/brutal-ui';
 	            "update": {
 	              "x": {"value": 0},
 	              "y": {"value": isMobile ? 18 : 22},
+				  "align": { "value": "left" },
 	              "text": {"value": "Inflation"},
 	              "fontSize": {"value": isMobile ? 16 : 20},
 	              "fontWeight": {"value": "bold"},
@@ -484,6 +486,7 @@ import { Card } from '@eliancodes/brutal-ui';
 	            "update": {
 	              "x": {"value": 0},
 	              "y": {"value": isMobile ? 36 : 44},
+				  "align": { "value": "left" },
 	              "text": {"value": "Report"},
 	              "fontSize": {"value": isMobile ? 16 : 20},
 	              "fontWeight": {"value": "bold"},
@@ -511,6 +514,7 @@ import { Card } from '@eliancodes/brutal-ui';
 	            "update": {
 	              "x": {"value": 0},
 	              "y": {"value": isMobile ? 52 : 62},
+				  "align": { "value": "left" },
 	              "text": {"signal": "'Data: ' + '" + cpiData.reportMonth + "'" },
 	              "fontSize": {"value": isMobile ? 10 : 12},
 	              "fill": {"value": "#718096"},
