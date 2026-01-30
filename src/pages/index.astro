@@ -445,7 +445,7 @@ import { Card } from '@eliancodes/brutal-ui';
 	      "type": "group",
 	      "encode": {
 	        "update": {
-	          "x": { "value": isMobile ? -90 : -140 },
+	          "x": { "value": isMobile ? -140 : -160 },
 	          "y": {"value": 10}
 	        }
 	      },
@@ -458,10 +458,11 @@ import { Card } from '@eliancodes/brutal-ui';
 	              "y": {"value": 0},
 				  "align": { "value": "left" },	
 	              "text": {"value": "Price"},
+				  "font": { "value": "Righteous" },
 	              "fontSize": {"value": isMobile ? 16 : 20},
 	              "fontWeight": {"value": "bold"},
 	              "fill": {"value": "#000000"},
-	              "fillOpacity": {"value": 0.5}
+	              "fillOpacity": {"value": 0.8}
 	            }
 	          }
 	        },
@@ -473,10 +474,11 @@ import { Card } from '@eliancodes/brutal-ui';
 	              "y": {"value": isMobile ? 18 : 22},
 				  "align": { "value": "left" },
 	              "text": {"value": "Inflation"},
+				  "font": { "value": "Righteous" },
 	              "fontSize": {"value": isMobile ? 16 : 20},
 	              "fontWeight": {"value": "bold"},
 	              "fill": {"value": "#000000"},
-	              "fillOpacity": {"value": 0.5}
+	              "fillOpacity": {"value": 0.8}
 	            }
 	          }
 	        },
@@ -488,10 +490,11 @@ import { Card } from '@eliancodes/brutal-ui';
 	              "y": {"value": isMobile ? 36 : 44},
 				  "align": { "value": "left" },
 	              "text": {"value": "Report"},
+				  "font": { "value": "Righteous" },
 	              "fontSize": {"value": isMobile ? 16 : 20},
 	              "fontWeight": {"value": "bold"},
 	              "fill": {"value": "#718096"},
-	              "fillOpacity": {"value": 0.5}
+	              "fillOpacity": {"value": 0.8}
 	            }
 	          }
 	        },
@@ -499,12 +502,12 @@ import { Card } from '@eliancodes/brutal-ui';
 	          "type": "symbol",
 	          "encode": {
 	            "update": {
-	              "x": {"value": isMobile ? 60 : 75},
-	              "y": {"value": isMobile ? 33 : 40},
+	              "x": {"value": isMobile ? 55 : 75},
+	              "y": {"value": isMobile ? 30 : 35},
 	              "size": {"value": isMobile ? 30 : 50},
 	              "shape": {"value": "circle"},
 	              "fill": {"value": "#ef4444"},
-	              "fillOpacity": {"value": 0.2}
+	              "fillOpacity": {"value": 0.8}
 	            }
 	          }
 	        },
@@ -517,8 +520,8 @@ import { Card } from '@eliancodes/brutal-ui';
 				  "align": { "value": "left" },
 	              "text": {"signal": "'Data: ' + '" + cpiData.reportMonth + "'" },
 	              "fontSize": {"value": isMobile ? 10 : 12},
-	              "fill": {"value": "#718096"},
-	              "fillOpacity": {"value": 0.2}
+	              "fill": {"value": "#000000"},
+	              "fillOpacity": {"value": 0.8}
 	            }
 	          }
 	        }
