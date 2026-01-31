@@ -183,6 +183,7 @@ NEW_MOCK_DATA="  function useMockData() {
     cpiData = {
       reportDate: '$REPORT_DATE',
       reportMonth: '$FULL_MONTH',
+      reportMonthYear: '$PREV_MONTH $REPORT_YEAR',
       previousMonth: '$PREV_MONTH',
       previousYear: '$PREV_YEAR',
       categories: $JSON_DATA
