@@ -42,7 +42,7 @@ import { Card } from '@eliancodes/brutal-ui';
 
       <!-- Visualization -->
       <Card class="bg-[#ebf8ff]">
-        <h2 class='text-3xl md:text-5xl mb-6'>Let's Look at Price Changes by Category</h2>
+        <h2 class='text-3xl md:text-5xl mb-6'>Let's Look at Price Changes by Expense Category</h2>
         <div id="reportDate" class='text-lg'></div>
         <div id="inflationChart" style='width: 100%; overflow-x: auto;'></div>
       </Card>
@@ -303,10 +303,10 @@ import { Card } from '@eliancodes/brutal-ui';
   function renderPage() {
     // Update report date
     document.getElementById('reportDate').innerHTML = 
-      `📅 Latest data from Bureau of Labor Statistics: ${cpiData.reportMonth}. Note that the "All Items" category refers to the total basket of goods and services that households buy.`;
+      `Latest data from the Bureau of Labor Statistics: ${cpiData.reportMonth}. Note that the "All Items" category refers to the total basket of goods and services that households buy.`;
     
     document.getElementById('calculatorDesc').innerHTML = 
-      `Enter your monthly spending for ${cpiData.reportMonth} in categories below to see your personal inflation and what those expenses would have cost last month (${cpiData.previousMonth}) and last year (${cpiData.previousYear}). The price changes that you experienced in ${cpiData.reportMonth} might be different to the annual ${cpiData.categories["All Items"].annual}% total price change in the United States.`;
+      `Enter your monthly expenses for ${cpiData.reportMonth} in categories below to see your <strong>personal inflation</strong> and what those expenses would have cost last month (${cpiData.previousMonth}) and last year (${cpiData.previousYear}). The price changes that you experienced in ${cpiData.reportMonth} might be different to the annual <strong>${cpiData.categories["All Items"].annual}%</strong> total price change in the United States.`;
 
     // Render expense forms
     renderExpenseForms();
