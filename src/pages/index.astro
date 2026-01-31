@@ -16,13 +16,13 @@ import { Card } from '@eliancodes/brutal-ui';
     <section class='grid grid-cols-1 gap-8 mt-4'>
       <!-- Header -->
       <Card>
-        <h1 class='text-5xl md:text-7xl mb-4'>Price Inflation Report</h1>
-        <p class='text-xl md:text-2xl mb-2'>
-          To help Americans understand the changing prices in the economy and in their daily life.
+        <h2 class='text-4xl md:text-6xl mb-4'>How fast are your prices and expenses rising?</h2>
+		<p class='text-xl md:text-2xl mb-2'>
+          Enter your monthly expenses below to see your <strong>personal inflation</strong> and change in expenses.
         </p>
-        <p class='text-base md:text-lg text-gray-600'>
-          <strong>How fast are your prices rising?</strong> Enter your monthly expenses below to see your personal inflation.
-        </p>
+		<p class='text-base md:text-lg text-gray-600'>
+          <strong>Our goal is to help Americans understand the changing prices in the economy and in their daily life.</strong> 
+        </p>        
       </Card>
 
       <!-- What is Inflation -->
@@ -32,17 +32,17 @@ import { Card } from '@eliancodes/brutal-ui';
             Inflation is the <strong>rate</strong> at which prices increase over time. Think of it like the speedometer in your car—it tells you how fast you're going, not how far you've traveled. Similarly, inflation tells you how quickly prices are rising, not how expensive things are overall.
           </p>
           <p class='text-lg md:text-xl mb-4'>
-            A 3% annual inflation rate means that something costing $100 today would cost $103 in a year. The key word is "rate"—it's about the <em>speed of change</em>, not the price level itself. Even if prices are high, if inflation is 0%, prices aren't changing. Conversely, even if prices are low, 10% inflation means they're rising rapidly.
+            A 3% annual inflation rate means that something costing $100 today would cost $103 in a year. The key word is "rate"—it's about the <em>speed of change</em>, not the price level itself. If inflation is 0%, prices aren't changing. If inflation is 10%, prices are rising rapidly.
           </p>
           <p class='text-lg md:text-xl'>
-            We show both <strong>monthly</strong> inflation (how prices changed from last month) and <strong>annual</strong> inflation (how prices changed over the past year). Monthly rates are typically smaller but more volatile; annual rates give a better sense of the overall trend.
+            We show both <strong>monthly</strong> inflation (how prices changed from last month) and <strong>annual</strong> inflation (how prices changed over the past year). Monthly rates are typically smaller but more volatile; annual rates give a better sense of the overall trajectory.
           </p>
       </Card>
 
 
       <!-- Visualization -->
       <Card class="bg-[#ebf8ff]">
-        <h2 class='text-3xl md:text-5xl mb-6'>Price Changes by Category</h2>
+        <h2 class='text-3xl md:text-5xl mb-6'>Let's Look at Price Changes by Category</h2>
         <div id="reportDate" class='text-lg'></div>
         <div id="inflationChart" style='width: 100%; overflow-x: auto;'></div>
       </Card>
@@ -98,7 +98,7 @@ import { Card } from '@eliancodes/brutal-ui';
       <!-- Share Data Survey -->
       <Card>
           <h2 class='text-3xl md:text-5xl mb-4'>
-            Help Build America’s Personal Inflation Story
+            Share Your Personal Inflation Story
           </h2>
 
           <p class='text-lg mb-4'>
@@ -303,10 +303,10 @@ import { Card } from '@eliancodes/brutal-ui';
   function renderPage() {
     // Update report date
     document.getElementById('reportDate').innerHTML = 
-      `📅 Latest Report: ${cpiData.reportMonth} (Released ${cpiData.reportDate}). Note that All Items category refers to the total basket of goods and services that households buy.`;
+      `📅 Latest Consumer Price Index data: ${cpiData.reportMonth}. Note that the "All Items" category refers to the total basket of goods and services that households buy.`;
     
     document.getElementById('calculatorDesc').innerHTML = 
-      `Enter your monthly spending for ${cpiData.reportMonth} in any categories below to see what those expenses would have cost in ${cpiData.previousMonth} and ${cpiData.previousYear}.`;
+      `Enter your monthly spending for ${cpiData.reportMonth} in any categories below to see what those expenses would have cost last month (${cpiData.previousMonth}) and in ${cpiData.previousYear}.`;
 
     // Render expense forms
     renderExpenseForms();
@@ -413,7 +413,7 @@ import { Card } from '@eliancodes/brutal-ui';
           "name": "color",
           "type": "ordinal",
           "domain": ["Monthly", "Annual"],
-          "range": ["#6366f1", "#8b5cf6"]
+          "range": ["#718096", "#ef4444"]
         }
       ],
       "axes": [
@@ -445,7 +445,7 @@ import { Card } from '@eliancodes/brutal-ui';
 	      "type": "group",
 	      "encode": {
 	        "update": {
-	          "x": { "value": isMobile ? -140 : -160 },
+	          "x": { "value": isMobile ? -140 : -165 },
 	          "y": {"value": 10}
 	        }
 	      },
@@ -502,7 +502,7 @@ import { Card } from '@eliancodes/brutal-ui';
 	          "type": "symbol",
 	          "encode": {
 	            "update": {
-	              "x": {"value": isMobile ? 56 : 71},
+	              "x": {"value": isMobile ? 56 : 70},
 	              "y": {"value": isMobile ? 30 : 37},
 	              "size": {"value": isMobile ? 30 : 50},
 	              "shape": {"value": "circle"},
