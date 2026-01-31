@@ -16,9 +16,9 @@ import { Card } from '@eliancodes/brutal-ui';
     <section class='grid grid-cols-1 gap-8 mt-4'>
       <!-- Header -->
       <Card>
-        <h2 class='text-4xl md:text-6xl mb-4'>How fast are your prices and expenses rising?</h2>
+        <h2 class='text-4xl md:text-6xl mb-4'>How fast are your prices rising?</h2>
 		<p class='text-xl md:text-2xl mb-2'>
-          Enter your monthly expenses below to see your <strong>personal inflation</strong> and change in expenses.
+          Enter your monthly expenses below to see your <strong>personal inflation</strong> and the change in your expenses.
         </p>
 		<p class='text-base md:text-lg text-gray-600'>
           <strong>Our goal is to help Americans understand the changing prices in the economy and in their daily life.</strong> 
@@ -108,7 +108,7 @@ import { Card } from '@eliancodes/brutal-ui';
 
             <div style='background:#f0fff4;border-left:4px solid #48bb78;padding:15px;margin-bottom:20px;'>
               <p class='text-base'>
-                <strong>🔒 Trust & Privacy:</strong>
+                <strong>🔒 Privacy Notice:</strong>
                 Your responses will be anonymous and combined with responses from other Americans across the country to show national patterns.
               </p>
             </div>
@@ -303,10 +303,10 @@ import { Card } from '@eliancodes/brutal-ui';
   function renderPage() {
     // Update report date
     document.getElementById('reportDate').innerHTML = 
-      `📅 Latest Consumer Price Index data: ${cpiData.reportMonth}. Note that the "All Items" category refers to the total basket of goods and services that households buy.`;
+      `📅 Latest data from Bureau of Labor Statistics: ${cpiData.reportMonth}. Note that the "All Items" category refers to the total basket of goods and services that households buy.`;
     
     document.getElementById('calculatorDesc').innerHTML = 
-      `Enter your monthly spending for ${cpiData.reportMonth} in any categories below to see what those expenses would have cost last month (${cpiData.previousMonth}) and in ${cpiData.previousYear}.`;
+      `Enter your monthly spending for ${cpiData.reportMonth} in categories below to see your personal inflation and what those expenses would have cost last month (${cpiData.previousMonth}) and last year (${cpiData.previousYear}). The price changes that you experienced in ${cpiData.reportMonth} might be different to the annual ${summary.nationalInflation.toFixed(1)}% total price change in the United States.`;
 
     // Render expense forms
     renderExpenseForms();
@@ -518,7 +518,7 @@ import { Card } from '@eliancodes/brutal-ui';
 	              "x": {"value": 0},
 	              "y": {"value": isMobile ? 52 : 62},
 				  "align": { "value": "left" },
-	              "text": {"signal": "'' + '" + cpiData.reportMonth + "'" },
+	              "text": {"signal": "'" + cpiData.reportMonth + "\\nCPI-BLS'"},
 	              "fontSize": {"value": isMobile ? 10 : 12},
 	              "fill": {"value": "#000000"},
 	              "fillOpacity": {"value": 0.9}
