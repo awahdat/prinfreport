@@ -306,7 +306,7 @@ import { Card } from '@eliancodes/brutal-ui';
       `📅 Latest data from Bureau of Labor Statistics: ${cpiData.reportMonth}. Note that the "All Items" category refers to the total basket of goods and services that households buy.`;
     
     document.getElementById('calculatorDesc').innerHTML = 
-      `Enter your monthly spending for ${cpiData.reportMonth} in categories below to see your personal inflation and what those expenses would have cost last month (${cpiData.previousMonth}) and last year (${cpiData.previousYear}). The price changes that you experienced in ${cpiData.reportMonth} might be different to the annual ${summary.nationalInflation.toFixed(1)}% total price change in the United States.`;
+      `Enter your monthly spending for ${cpiData.reportMonth} in categories below to see your personal inflation and what those expenses would have cost last month (${cpiData.previousMonth}) and last year (${cpiData.previousYear}). The price changes that you experienced in ${cpiData.reportMonth} might be different to the annual ${cpiData.categories["All Items"].annual}% total price change in the United States.`;
 
     // Render expense forms
     renderExpenseForms();
